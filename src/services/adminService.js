@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
+const Role = require('../models/Role');
+const AdminActivityLog = require('../models/AdminActivityLog');
 
 class AdminService {
   async getDashboardAnalytics() {
@@ -25,7 +27,7 @@ class AdminService {
     return User.find();
   }
 
-  async updateUserRole(userId, newRole) {
+  async updateUserRole(userId, newRole, adminId = 'usr_admin_001') {
     const validRoles = ['admin', 'user'];
     if (!validRoles.includes(newRole)) {
       throw new Error(`Role "${newRole}" is invalid.`);
@@ -35,6 +37,19 @@ class AdminService {
     if (!updated) {
       throw new Error('User not found.');
     }
+
+    // Keep user_roles mapping in sync
+    await Role.setUserPrimaryRole(userId, newRole);
+
+    // Record admin activity log in admin_activity_logs
+    await AdminActivityLog.record({
+      adminId,
+      action: 'UPDATE_USER_ROLE',
+      targetType: 'USER',
+      targetId: userId,
+      details: `Changed role of user ${updated.email} to [${newRole}]`,
+    });
+
     const { password, ...safeUser } = updated;
     return safeUser;
   }
