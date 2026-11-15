@@ -41,6 +41,7 @@ desktop.ini
 # IDE & Editor files
 .idea/
 .vscode/
+stitch_designs/
 *.sublime-project
 *.sublime-workspace
 *.suo

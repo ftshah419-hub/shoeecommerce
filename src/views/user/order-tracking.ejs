@@ -1,0 +1,189 @@
+<%- include('partials/header', { title: `Order Live Tracking #${order.order_number || order.id} - Neleeri Sneakers` }) %>
+
+<main class="w-full pt-4 bg-background min-h-screen text-on-surface">
+  <div class="flex flex-col w-full">
+    
+    <!-- Status / Confirmation Hero Strip (Stitch AI HUD) -->
+    <section class="relative w-full overflow-hidden bg-surface-container-lowest py-10 px-4 md:px-12 border-b border-outline-variant/30">
+      <div class="absolute -top-24 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 right-10 w-80 h-80 bg-secondary-container/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-7xl mx-auto flex flex-col gap-6">
+        <!-- Top Meta Coordinates & Status Pill -->
+        <div class="flex flex-wrap items-center justify-between gap-4 text-xs font-label-tech text-on-surface-variant">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container text-primary tracking-widest uppercase font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              SYS-SYNC // VERIFIED 100%
+            </span>
+            <span class="hidden sm:inline">[GEO: 19.0596° N, 72.8295° E]</span>
+          </div>
+          <div class="tracking-widest font-mono text-tertiary">
+            DISPATCH PROTOCOL // <%= shipment ? shipment.tracking_number : 'BLUEDART-EXP-992' %>
+          </div>
+        </div>
+
+        <!-- Main Headline Matrix -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+          <div class="lg:col-span-8 flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-primary-container text-on-primary flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-[24px]">check_circle</span>
+              </div>
+              <span class="font-label-caps text-xs uppercase text-primary tracking-widest font-bold">TRANSACTION AUTHENTICATED</span>
+            </div>
+
+            <h1 class="font-display-promo text-4xl sm:text-6xl uppercase tracking-tight text-on-surface leading-none font-bold">
+              ORDER CONFIRMED.<br/>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-fixed via-primary to-primary-container">
+                YOU ARE IN THE VAULT.
+              </span>
+            </h1>
+
+            <p class="text-sm text-on-surface-variant max-w-2xl">
+              Order Reference <strong class="text-on-surface"><%= order.order_number || order.id %></strong> is locked in. Digital invoice dispatched to <strong class="text-primary"><%= user.email %></strong>.
+            </p>
+          </div>
+
+          <!-- Quick Summary Unit -->
+          <div class="lg:col-span-4 bg-surface-container p-6 shadow-xl border border-outline-variant/30 space-y-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="font-label-tech text-[10px] text-tertiary uppercase block">Order Reference</span>
+                <span class="font-headline-sm text-lg font-bold font-mono text-on-surface"><%= order.order_number || order.id %></span>
+              </div>
+              <span class="px-2 py-0.5 bg-secondary-container text-on-secondary font-label-tech text-[10px] font-bold uppercase">
+                <%= order.order_status || order.status || 'IN TRANSIT' %>
+              </span>
+            </div>
+
+            <div class="bg-surface-container-low p-3 border border-outline-variant/20">
+              <span class="font-label-tech text-[10px] text-tertiary uppercase block">Estimated Delivery Window</span>
+              <span class="font-headline-sm text-sm text-secondary font-bold font-mono">
+                <%= shipment ? shipment.estimated_delivery : 'TOMORROW, 4:30 PM – 7:00 PM' %>
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between font-label-tech text-xs text-on-surface-variant pt-1 border-t border-outline-variant/20">
+              <span>COURIER: <%= shipment ? shipment.courier_name : 'BlueDart Air Express' %></span>
+              <span>VALUATION: $<%= Number(order.total_amount || order.totalAmount || 0).toFixed(2) %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Interactive Telemetry & Timeline Section -->
+    <section class="w-full py-12 px-4 md:px-12 max-w-7xl mx-auto space-y-10">
+      
+      <!-- Telemetry Progress Timeline -->
+      <div class="bg-surface-container-low p-6 lg:p-8 border border-outline-variant/30 space-y-6">
+        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+          <div>
+            <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[SATELLITE // TELEMETRY]</span>
+            <h2 class="font-headline-sm text-xl uppercase text-on-surface font-bold">Live Flight &amp; Dispatch Path</h2>
+          </div>
+          <span class="font-label-tech text-xs text-secondary font-bold">NODE: TRANSIT_IN_PROGRESS</span>
+        </div>
+
+        <!-- 5-Stage Stepper HUD -->
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+          <div class="bg-surface-container p-3 border-l-2 border-primary space-y-1">
+            <span class="font-label-tech text-[10px] text-primary font-bold">STAGE // 01 [DONE]</span>
+            <p class="font-label-caps text-xs uppercase text-on-surface font-bold">ORDER PLACED</p>
+            <span class="text-[10px] text-tertiary font-mono block">CRYPTOGRAPHIC LOGGED</span>
+          </div>
+
+          <div class="bg-surface-container p-3 border-l-2 border-primary space-y-1">
+            <span class="font-label-tech text-[10px] text-primary font-bold">STAGE // 02 [DONE]</span>
+            <p class="font-label-caps text-xs uppercase text-on-surface font-bold">QA INSPECTION</p>
+            <span class="text-[10px] text-tertiary font-mono block">STATION LAB-07</span>
+          </div>
+
+          <div class="bg-primary-container/20 p-3 border-l-2 border-secondary space-y-1 shadow-md">
+            <span class="font-label-tech text-[10px] text-secondary font-bold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+              STAGE // 03 [LIVE]
+            </span>
+            <p class="font-label-caps text-xs uppercase text-primary-fixed font-bold">AIR EXPRESS TRANSIT</p>
+            <span class="text-[10px] text-on-surface font-mono block">BLUE DART FLIGHT 882</span>
+          </div>
+
+          <div class="bg-surface-container p-3 border-l-2 border-outline-variant/40 space-y-1 opacity-70">
+            <span class="font-label-tech text-[10px] text-tertiary">STAGE // 04 [QUEUED]</span>
+            <p class="font-label-caps text-xs uppercase text-on-surface-variant font-bold">OUT FOR DELIVERY</p>
+            <span class="text-[10px] text-tertiary font-mono block">LOCAL RUNNER UNIT</span>
+          </div>
+
+          <div class="bg-surface-container p-3 border-l-2 border-outline-variant/40 space-y-1 opacity-70">
+            <span class="font-label-tech text-[10px] text-tertiary">STAGE // 05 [QUEUED]</span>
+            <p class="font-label-caps text-xs uppercase text-on-surface-variant font-bold">VAULT HANDOVER</p>
+            <span class="text-[10px] text-tertiary font-mono block">CUSTOMER DESTINATION</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manifest Items Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Ordered Items Table (8 cols) -->
+        <div class="lg:col-span-8 bg-surface-container-low p-6 lg:p-8 border border-outline-variant/30 space-y-4">
+          <div class="border-b border-outline-variant/20 pb-3">
+            <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[ENTITIES // ORDER_ITEMS]</span>
+            <h3 class="font-headline-sm text-lg uppercase text-on-surface font-bold">Verified Manifest Content</h3>
+          </div>
+
+          <div class="space-y-3">
+            <% (items || []).forEach(item => { %>
+              <div class="bg-surface-container p-4 border border-outline-variant/20 flex items-center justify-between">
+                <div>
+                  <h4 class="font-headline-sm text-sm uppercase text-on-surface font-bold"><%= item.product_name %></h4>
+                  <p class="text-xs text-on-surface-variant font-mono">
+                    SKU: <%= item.sku %> &bull; Size: UK <%= item.size %> &bull; Qty: <%= item.quantity %>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="font-mono text-sm text-on-surface font-bold">$<%= Number(item.total_price || item.unit_price).toFixed(2) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+
+          <div class="border-t border-outline-variant/20 pt-4 flex justify-between text-xs font-label-tech">
+            <span class="text-tertiary">TOTAL VALUATION (PAID VIA <%= payment ? payment.payment_method : 'UPI' %>):</span>
+            <span class="text-primary font-bold font-mono text-base">$<%= Number(order.total_amount || order.totalAmount || 0).toFixed(2) %></span>
+          </div>
+        </div>
+
+        <!-- Action CTAs Column (4 cols) -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-4">
+            <span class="font-label-tech text-xs uppercase text-primary tracking-widest block">TELEMETRY ACTIONS</span>
+            
+            <a href="/user/dashboard" 
+               class="w-full bg-primary-container text-on-primary py-3 px-4 font-label-caps text-xs uppercase font-bold hover:bg-inverse-primary transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">dashboard</span>
+              <span>Command Dashboard</span>
+            </a>
+
+            <a href="/products" 
+               class="w-full bg-surface-container hover:bg-surface-container-high text-on-surface py-3 px-4 font-label-caps text-xs uppercase transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">storefront</span>
+              <span>Order More Drops</span>
+            </a>
+
+            <a href="/user/profile" 
+               class="w-full bg-surface-container hover:bg-surface-container-high text-on-surface py-3 px-4 font-label-caps text-xs uppercase transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">person</span>
+              <span>View User Profile</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

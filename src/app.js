@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const routes = require('./routes');
+const userRoutes = require('./routes/userRoutes');
 const { checkCurrentUser } = require('./middlewares/authMiddleware');
 const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHandler');
 
@@ -22,7 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Global Context Middleware (attaches currentUser to req and res.locals for EJS views)
 app.use(checkCurrentUser);
 
-// Mount Main Application Routes
+// Mount User Routes & Root Application Routes
+app.use('/user', userRoutes);
 app.use('/', routes);
 
 // Error Handling Middlewares

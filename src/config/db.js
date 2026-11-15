@@ -12,16 +12,27 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// In-Memory Database matching the Neleeri Sneakers ER Diagram
+// In-Memory Database matching the complete Neleeri Sneakers ER Diagram
 const db = {
+  // Authentication & User Management Tables
   users: [],
-  roles: [],
-  permissions: [],
-  user_roles: [],
-  role_permissions: [],
-  login_logs: [],
-  admin_activity_logs: [],
   user_sessions: [],
+  login_logs: [],
+  social_accounts: [],
+  email_verifications: [],
+  otp_verifications: [],
+  password_resets: [],
+
+  // RBAC Role & Permission Tables
+  roles: [],
+  user_roles: [],
+  permissions: [],
+  role_permissions: [],
+
+  // Administration Tables
+  admin_activity_logs: [],
+
+  // E-Commerce Domain Tables
   categories: [],
   products: [],
   product_variants: [],
@@ -84,10 +95,22 @@ const seedDatabase = async () => {
     {
       id: 'role_super_admin',
       role_name: 'SUPER_ADMIN',
+      name: ROLES.ADMIN,
       display_name: 'Super Administrator',
       description: 'Full root access to all store parameters, drops, finance, and system matrix.',
       is_system: true,
       created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'role_admin',
+      role_name: 'ADMIN',
+      name: ROLES.ADMIN,
+      display_name: 'Store Administrator',
+      description: 'Store Administrator with operational management privileges',
+      is_system: true,
+      created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
     },
     {
       id: 'role_ops_manager',
@@ -96,6 +119,7 @@ const seedDatabase = async () => {
       description: 'Controls order fulfillment, air-cargo dispatch, inventory reallocations, and drops.',
       is_system: true,
       created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
     },
     {
       id: 'role_support',
@@ -104,69 +128,94 @@ const seedDatabase = async () => {
       description: 'Manages customer profiles, reviews moderation, and inquiries.',
       is_system: true,
       created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
     },
     {
       id: 'role_customer',
       role_name: 'CUSTOMER',
+      name: ROLES.USER,
       display_name: 'Sneakerhead / Customer',
       description: 'Standard customer account with storefront ordering and drops pass.',
       is_system: true,
       created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
     },
   ];
 
   // 2. Permissions
   db.permissions = [
-    { id: 'perm_dashboard', permission_name: 'view_dashboard', description: 'Access Command Center and analytics', module: 'DASHBOARD' },
-    { id: 'perm_manage_orders', permission_name: 'manage_orders', description: 'View, update, and dispatch orders', module: 'OPERATIONS' },
-    { id: 'perm_manage_products', permission_name: 'manage_products', description: 'Create, edit, and deactivate sneakers', module: 'OPERATIONS' },
-    { id: 'perm_manage_inventory', permission_name: 'manage_inventory', description: 'Adjust stock and view inventory logs', module: 'OPERATIONS' },
-    { id: 'perm_manage_shipments', permission_name: 'manage_shipments', description: 'Oversee air cargo telemetry & AWBs', module: 'OPERATIONS' },
-    { id: 'perm_manage_payments', permission_name: 'manage_payments', description: 'Review transaction audits and refunds', module: 'OPERATIONS' },
-    { id: 'perm_manage_customers', permission_name: 'manage_customers', description: 'Inspect squad members and manage accounts', module: 'CUSTOMER_SQUAD' },
-    { id: 'perm_manage_reviews', permission_name: 'manage_reviews', description: 'Approve, reject, and moderate product ratings', module: 'CUSTOMER_SQUAD' },
-    { id: 'perm_manage_messages', permission_name: 'manage_messages', description: 'Read and resolve support messages', module: 'CUSTOMER_SQUAD' },
-    { id: 'perm_manage_coupons', permission_name: 'manage_coupons', description: 'Create and configure promo codes and drops', module: 'MARKETING' },
-    { id: 'perm_manage_admins', permission_name: 'manage_admins', description: 'Manage admin accounts and assign roles', module: 'ADMINISTRATION' },
-    { id: 'perm_manage_roles', permission_name: 'manage_roles', description: 'Configure roles and grant permissions', module: 'ADMINISTRATION' },
-    { id: 'perm_view_logs', permission_name: 'view_logs', description: 'Inspect audit trail and security telemetry', module: 'ADMINISTRATION' },
+    { id: 'perm_dashboard', permission_name: 'view_dashboard', name: 'view_dashboard', description: 'Access Command Center and analytics', module: 'DASHBOARD' },
+    { id: 'perm_manage_orders', permission_name: 'manage_orders', name: 'manage_orders', description: 'View, update, and dispatch orders', module: 'OPERATIONS' },
+    { id: 'perm_manage_products', permission_name: 'manage_products', name: 'manage_products', description: 'Create, edit, and deactivate sneakers', module: 'OPERATIONS' },
+    { id: 'perm_manage_inventory', permission_name: 'manage_inventory', name: 'manage_inventory', description: 'Adjust stock and view inventory logs', module: 'OPERATIONS' },
+    { id: 'perm_manage_shipments', permission_name: 'manage_shipments', name: 'manage_shipments', description: 'Oversee air cargo telemetry & AWBs', module: 'OPERATIONS' },
+    { id: 'perm_manage_payments', permission_name: 'manage_payments', name: 'manage_payments', description: 'Review transaction audits and refunds', module: 'OPERATIONS' },
+    { id: 'perm_manage_customers', permission_name: 'manage_customers', name: 'manage_users', description: 'Inspect squad members and manage accounts', module: 'CUSTOMER_SQUAD' },
+    { id: 'perm_manage_reviews', permission_name: 'manage_reviews', name: 'manage_reviews', description: 'Approve, reject, and moderate product ratings', module: 'CUSTOMER_SQUAD' },
+    { id: 'perm_manage_messages', permission_name: 'manage_messages', name: 'manage_messages', description: 'Read and resolve support messages', module: 'CUSTOMER_SQUAD' },
+    { id: 'perm_manage_coupons', permission_name: 'manage_coupons', name: 'manage_coupons', description: 'Create and configure promo codes and drops', module: 'MARKETING' },
+    { id: 'perm_manage_admins', permission_name: 'manage_admins', name: 'manage_admins', description: 'Manage admin accounts and assign roles', module: 'ADMINISTRATION' },
+    { id: 'perm_manage_roles', permission_name: 'manage_roles', name: 'manage_roles', description: 'Configure roles and grant permissions', module: 'ADMINISTRATION' },
+    { id: 'perm_view_logs', permission_name: 'view_logs', name: 'view_analytics', description: 'Inspect audit trail and security telemetry', module: 'ADMINISTRATION' },
+    { id: 'perm_customer_checkout', permission_name: 'customer_checkout', name: 'customer_checkout', description: 'Place sneaker orders and checkout cart', module: 'CHECKOUT' },
+    { id: 'perm_manage_profile', permission_name: 'manage_profile', name: 'manage_profile', description: 'Update customer personal profile and addresses', module: 'PROFILE' },
   ];
 
   // 3. Role Permissions Mapping
-  // Super Admin gets all permissions
   db.role_permissions = db.permissions.map((p) => ({
+    id: `rp_${p.id}`,
     role_id: 'role_super_admin',
+    roleId: 'role_super_admin',
     permission_id: p.id,
+    permissionId: p.id,
   }));
 
-  // Operations Manager gets Operations + Dashboard + Customer Squad view
+  // Operations Manager permissions
   ['perm_dashboard', 'perm_manage_orders', 'perm_manage_products', 'perm_manage_inventory', 'perm_manage_shipments', 'perm_manage_payments', 'perm_manage_customers', 'perm_view_logs'].forEach((pid) => {
-    db.role_permissions.push({ role_id: 'role_ops_manager', permission_id: pid });
+    db.role_permissions.push({ id: `rp_ops_${pid}`, role_id: 'role_ops_manager', roleId: 'role_ops_manager', permission_id: pid, permissionId: pid });
   });
 
-  // Support Lead
+  // Support Lead permissions
   ['perm_dashboard', 'perm_manage_customers', 'perm_manage_reviews', 'perm_manage_messages'].forEach((pid) => {
-    db.role_permissions.push({ role_id: 'role_support', permission_id: pid });
+    db.role_permissions.push({ id: `rp_sup_${pid}`, role_id: 'role_support', roleId: 'role_support', permission_id: pid, permissionId: pid });
+  });
+
+  // Customer permissions
+  ['perm_customer_checkout', 'perm_manage_profile'].forEach((pid) => {
+    db.role_permissions.push({ id: `rp_cust_${pid}`, role_id: 'role_customer', roleId: 'role_customer', permission_id: pid, permissionId: pid });
   });
 
   // 4. Users (Admins and Customers)
   db.users = [
     {
       id: 'usr_admin_001',
-      name: 'Vikram Singhania',
-      full_name: 'Vikram Singhania',
-      email: config.adminSeed.email,
+      firstName: 'Vikram',
+      lastName: 'Singhania',
+      name: config.adminSeed.name || 'Vikram Singhania',
+      full_name: config.adminSeed.name || 'Vikram Singhania',
+      email: config.adminSeed.email.toLowerCase(),
       password: adminHashedPassword,
       role: ROLES.ADMIN,
       phone: '+91 98201 00418',
       profile_image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      shoeSize: 10.5,
+      marketingOptIn: true,
+      termsAgreed: true,
+      status: 'active',
       account_status: 'ACTIVE',
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 45 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_admin_002',
+      firstName: 'Neha',
+      lastName: 'Sharma',
       name: 'Neha Sharma',
       full_name: 'Neha Sharma',
       email: 'neha.ops@neleerisneakers.com',
@@ -175,12 +224,20 @@ const seedDatabase = async () => {
       phone: '+91 98112 44321',
       profile_image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_001',
+      firstName: 'Arhan',
+      lastName: 'Mukherjee',
       name: 'Arhan Mukherjee',
       full_name: 'Arhan Mukherjee',
       email: 'arhan.m@studio402.in',
@@ -189,14 +246,25 @@ const seedDatabase = async () => {
       phone: '+91 98201 44810',
       profile_image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Syndicate Black',
       squad_uid: 'SQ-BOM-9022',
+      shoeSize: 9.5,
+      marketingOptIn: true,
+      termsAgreed: true,
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 25 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_002',
+      firstName: 'Tanya',
+      lastName: 'Kapoor',
       name: 'Tanya Kapoor',
       full_name: 'Tanya Kapoor',
       email: 'tanya_k@proton.me',
@@ -205,14 +273,23 @@ const seedDatabase = async () => {
       phone: '+91 99304 88123',
       profile_image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Lvl 3 Squad',
       squad_uid: 'SQ-DEL-4019',
+      shoeSize: 7.0,
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 20 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_003',
+      firstName: 'Kabir',
+      lastName: 'Mehta',
       name: 'Kabir Mehta',
       full_name: 'Kabir Mehta',
       email: 'kabir.vault@gmail.com',
@@ -221,14 +298,23 @@ const seedDatabase = async () => {
       phone: '+91 97690 12345',
       profile_image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Syndicate Black',
       squad_uid: 'SQ-BLR-8831',
+      shoeSize: 10.0,
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_004',
+      firstName: 'Ria',
+      lastName: 'Desai',
       name: 'Ria Desai',
       full_name: 'Ria Desai',
       email: 'ria.design@icloud.com',
@@ -237,14 +323,23 @@ const seedDatabase = async () => {
       phone: '+91 98402 11982',
       profile_image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Lvl 2 Squad',
       squad_uid: 'SQ-BOM-1102',
+      shoeSize: 8.0,
       email_verified: true,
+      emailVerified: true,
       phone_verified: false,
+      phoneVerified: false,
       created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_005',
+      firstName: 'Deepak',
+      lastName: 'Kumar',
       name: 'Deepak Kumar',
       full_name: 'Deepak Kumar',
       email: 'deepak.k@alpha-co.in',
@@ -253,40 +348,58 @@ const seedDatabase = async () => {
       phone: '+91 98199 77654',
       profile_image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Syndicate Black',
       squad_uid: 'SQ-HYD-5501',
+      shoeSize: 9.0,
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       id: 'usr_customer_006',
+      firstName: 'John',
+      lastName: 'Doe',
       name: 'John Doe',
       full_name: 'John Doe',
       email: 'john@example.com',
+      phone: '+91 98200 11223',
       password: userHashedPassword,
       role: ROLES.USER,
-      phone: '+91 98200 11223',
       profile_image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
       account_status: 'ACTIVE',
+      status: 'active',
       squad_tier: 'Lvl 1 Initiate',
       squad_uid: 'SQ-DEL-0091',
+      shoeSize: 10,
+      marketingOptIn: false,
+      termsAgreed: true,
       email_verified: true,
+      emailVerified: true,
       phone_verified: true,
+      phoneVerified: true,
       created_at: new Date(Date.now() - 40 * 86400000).toISOString(),
+      createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   ];
 
   // 5. User Roles Mapping
   db.user_roles = [
-    { user_id: 'usr_admin_001', role_id: 'role_super_admin' },
-    { user_id: 'usr_admin_002', role_id: 'role_ops_manager' },
-    { user_id: 'usr_customer_001', role_id: 'role_customer' },
-    { user_id: 'usr_customer_002', role_id: 'role_customer' },
-    { user_id: 'usr_customer_003', role_id: 'role_customer' },
-    { user_id: 'usr_customer_004', role_id: 'role_customer' },
-    { user_id: 'usr_customer_005', role_id: 'role_customer' },
-    { user_id: 'usr_customer_006', role_id: 'role_customer' },
+    { id: 'ur_001', user_id: 'usr_admin_001', userId: 'usr_admin_001', role_id: 'role_super_admin', roleId: 'role_admin' },
+    { id: 'ur_002', user_id: 'usr_admin_002', userId: 'usr_admin_002', role_id: 'role_ops_manager', roleId: 'role_admin' },
+    { id: 'ur_003', user_id: 'usr_customer_001', userId: 'usr_customer_001', role_id: 'role_customer', roleId: 'role_customer' },
+    { id: 'ur_004', user_id: 'usr_customer_002', userId: 'usr_customer_002', role_id: 'role_customer', roleId: 'role_customer' },
+    { id: 'ur_005', user_id: 'usr_customer_003', userId: 'usr_customer_003', role_id: 'role_customer', roleId: 'role_customer' },
+    { id: 'ur_006', user_id: 'usr_customer_004', userId: 'usr_customer_004', role_id: 'role_customer', roleId: 'role_customer' },
+    { id: 'ur_007', user_id: 'usr_customer_005', userId: 'usr_customer_005', role_id: 'role_customer', roleId: 'role_customer' },
+    { id: 'ur_008', user_id: 'usr_customer_006', userId: 'usr_customer_006', role_id: 'role_customer', roleId: 'role_customer' },
   ];
 
   // 6. Categories
@@ -464,27 +577,23 @@ const seedDatabase = async () => {
 
   // 8. Product Variants
   db.product_variants = [
-    // snk_001
     { id: 'var_001', product_id: 'snk_001', sku: 'NL-CR-CBLT-075', size: 'UK 7.5', color: 'Electric Cobalt', color_code: '#1536c8', additional_price: 0, stock_quantity: 8, low_stock_threshold: 5, is_active: true },
     { id: 'var_002', product_id: 'snk_001', sku: 'NL-CR-CBLT-085', size: 'UK 8.5', color: 'Electric Cobalt', color_code: '#1536c8', additional_price: 0, stock_quantity: 12, low_stock_threshold: 5, is_active: true },
     { id: 'var_003', product_id: 'snk_001', sku: 'NL-CR-CBLT-095', size: 'UK 9.5', color: 'Electric Cobalt', color_code: '#1536c8', additional_price: 0, stock_quantity: 10, low_stock_threshold: 5, is_active: true },
     { id: 'var_004', product_id: 'snk_001', sku: 'NL-CR-CBLT-105', size: 'UK 10.5', color: 'Electric Cobalt', color_code: '#1536c8', additional_price: 0, stock_quantity: 7, low_stock_threshold: 5, is_active: true },
     { id: 'var_005', product_id: 'snk_001', sku: 'NL-CR-CBLT-115', size: 'UK 11.5', color: 'Electric Cobalt', color_code: '#1536c8', additional_price: 0, stock_quantity: 5, low_stock_threshold: 5, is_active: true },
 
-    // snk_002
     { id: 'var_006', product_id: 'snk_002', sku: 'NL-UT-NMD-070', size: 'UK 7.0', color: 'Cyber Gunmetal', color_code: '#474b53', additional_price: 0, stock_quantity: 25, low_stock_threshold: 10, is_active: true },
     { id: 'var_007', product_id: 'snk_002', sku: 'NL-UT-NMD-080', size: 'UK 8.0', color: 'Cyber Gunmetal', color_code: '#474b53', additional_price: 0, stock_quantity: 35, low_stock_threshold: 10, is_active: true },
     { id: 'var_008', product_id: 'snk_002', sku: 'NL-UT-NMD-090', size: 'UK 9.0', color: 'Cyber Gunmetal', color_code: '#474b53', additional_price: 0, stock_quantity: 40, low_stock_threshold: 10, is_active: true },
     { id: 'var_009', product_id: 'snk_002', sku: 'NL-UT-NMD-100', size: 'UK 10.0', color: 'Cyber Gunmetal', color_code: '#474b53', additional_price: 0, stock_quantity: 28, low_stock_threshold: 10, is_active: true },
     { id: 'var_010', product_id: 'snk_002', sku: 'NL-UT-NMD-110', size: 'UK 11.0', color: 'Cyber Gunmetal', color_code: '#474b53', additional_price: 0, stock_quantity: 12, low_stock_threshold: 10, is_active: true },
 
-    // snk_003
     { id: 'var_011', product_id: 'snk_003', sku: 'NL-DM-GST-080', size: 'UK 8.0', color: 'Triple Black', color_code: '#121316', additional_price: 0, stock_quantity: 70, low_stock_threshold: 15, is_active: true },
     { id: 'var_012', product_id: 'snk_003', sku: 'NL-DM-GST-090', size: 'UK 9.0', color: 'Triple Black', color_code: '#121316', additional_price: 0, stock_quantity: 85, low_stock_threshold: 15, is_active: true },
     { id: 'var_013', product_id: 'snk_003', sku: 'NL-DM-GST-100', size: 'UK 10.0', color: 'Triple Black', color_code: '#121316', additional_price: 0, stock_quantity: 75, low_stock_threshold: 15, is_active: true },
     { id: 'var_014', product_id: 'snk_003', sku: 'NL-DM-GST-110', size: 'UK 11.0', color: 'Triple Black', color_code: '#121316', additional_price: 0, stock_quantity: 50, low_stock_threshold: 15, is_active: true },
 
-    // snk_006 (Low stock alert)
     { id: 'var_015', product_id: 'snk_006', sku: 'NL-NC-007-060', size: 'UK 6.0', color: 'Noir Core Iridescent', color_code: '#1a1b20', additional_price: 0, stock_quantity: 3, low_stock_threshold: 5, is_active: true },
     { id: 'var_016', product_id: 'snk_006', sku: 'NL-NC-007-070', size: 'UK 7.0', color: 'Noir Core Iridescent', color_code: '#1a1b20', additional_price: 0, stock_quantity: 4, low_stock_threshold: 5, is_active: true },
     { id: 'var_017', product_id: 'snk_006', sku: 'NL-NC-007-080', size: 'UK 8.0', color: 'Noir Core Iridescent', color_code: '#1a1b20', additional_price: 0, stock_quantity: 5, low_stock_threshold: 5, is_active: true },
@@ -550,7 +659,7 @@ const seedDatabase = async () => {
     },
   ];
 
-  // 11. Orders (Matching the Order Fulfillment Suite reference)
+  // 11. Orders
   db.orders = [
     {
       id: 'ord_88294',
@@ -1180,7 +1289,7 @@ const seedDatabase = async () => {
       id: 'msg_003',
       name: 'Sahil Sethi',
       email: 'sahil.sethi@outlook.com',
-      phone: '+91 98110 33445',
+      phone: '+91 98100 33445',
       subject: 'Store collaboration pop-up in Bandra',
       message: 'We are hosting a curated streetwear showcase next month and would love to display Neleeri hardware prototypes.',
       status: 'RESOLVED',
@@ -1191,6 +1300,21 @@ const seedDatabase = async () => {
 
   // 20. Admin Activity Logs
   db.admin_activity_logs = [
+    {
+      id: 'log_adm_init',
+      admin_id: 'usr_admin_001',
+      adminId: 'usr_admin_001',
+      admin_name: 'Vikram Singhania',
+      action: 'SYSTEM_BOOTSTRAP',
+      targetType: 'SYSTEM',
+      targetId: 'SYS_INIT',
+      module: 'ADMINISTRATION',
+      details: 'Neleeri Sneakers Authentication & Admin Subsystem initialized with seeded RBAC',
+      ip_address: '127.0.0.1',
+      ipAddress: '127.0.0.1',
+      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    },
     {
       id: 'log_001',
       admin_id: 'usr_admin_001',

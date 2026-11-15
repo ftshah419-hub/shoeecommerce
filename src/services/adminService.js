@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Order = require('../models/Order');
 const Category = require('../models/Category');
 const ProductVariant = require('../models/ProductVariant');
+const Role = require('../models/Role');
 const AdminActivityLog = require('../models/AdminActivityLog');
 const { db } = require('../config/db');
 const ROLES = require('../constants/roles');
@@ -13,12 +14,12 @@ class AdminService {
     const users = await User.find();
     const products = await Product.find();
     const orders = await Order.find();
-    const categories = await Category.find();
-    const variants = await ProductVariant.find();
+    const categories = typeof Category !== 'undefined' && Category.find ? await Category.find() : (db.categories || []);
+    const variants = typeof ProductVariant !== 'undefined' && ProductVariant.find ? await ProductVariant.find() : (db.product_variants || []);
     const activityLogs = await AdminActivityLog.find();
 
     // 1. Metric Calculations from real records
-    const totalCustomers = users.filter((u) => u.role === ROLES.USER || u.role === 'customer').length;
+    const totalCustomers = users.filter((u) => u.role === ROLES.USER || u.role === 'customer' || u.role === 'user').length;
     const totalOrders = orders.length;
     const totalProducts = products.length;
     const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.final_amount || o.totalAmount) || 0), 0);
@@ -31,10 +32,10 @@ class AdminService {
     const lowStockProducts = products.filter((p) => (p.stock || 0) <= 15);
     const outOfStockProducts = products.filter((p) => (p.stock || 0) <= 0);
 
-    // 2. High-Priority Orders Stream (top 5 recent orders)
+    // 2. High-Priority Orders Stream
     const highPriorityOrders = orders.slice(0, 6);
 
-    // 3. Stock Velocity Gauges & Best-Selling Sneakers (live from orders and products)
+    // 3. Stock Velocity Gauges & Best-Selling Sneakers
     const productSalesMap = {};
     const orderItems = db.order_items || [];
     orderItems.forEach((item) => {
@@ -71,7 +72,6 @@ class AdminService {
     for (let i = 5; i >= 0; i--) {
       const mIdx = (currentMonthIdx - i + 12) % 12;
       monthlyLabels.push(months[mIdx]);
-      // Aggregate real orders if matching month or base off actual database
       const monthOrders = orders.filter((o) => {
         const d = new Date(o.created_at || o.order_date || Date.now());
         return d.getMonth() === mIdx;
@@ -96,21 +96,17 @@ class AdminService {
       };
     });
 
-    // 4. Logistics Telemetry
+    // 5. Logistics Telemetry
     const shipments = db.shipments || [];
     const inTransitShipments = shipments.filter((s) => s.shipping_status === 'IN_TRANSIT' || s.shipping_status === 'OUT_FOR_DELIVERY');
-    const deliveredShipments = shipments.filter((s) => s.shipping_status === 'DELIVERED');
     const transitValue = inTransitShipments.reduce((sum, s) => {
       const matchedOrder = orders.find((o) => o.id === s.order_id || o.order_number === s.order_number);
       return sum + (matchedOrder ? (matchedOrder.final_amount || 0) : 7497);
     }, 0);
 
-    // 5. Recent Admin Activities (from db)
     const recentActivities = activityLogs.slice(0, 5);
-
-    // 6. Latest Registered Customers
     const latestCustomers = users
-      .filter((u) => u.role === ROLES.USER || u.role === 'customer')
+      .filter((u) => u.role === ROLES.USER || u.role === 'customer' || u.role === 'user')
       .slice(0, 5);
 
     return {
@@ -150,7 +146,7 @@ class AdminService {
 
   async getAdminUsers() {
     const allUsers = await User.find();
-    return allUsers.filter((u) => u.role !== ROLES.USER && u.role !== 'customer');
+    return allUsers.filter((u) => u.role !== ROLES.USER && u.role !== 'customer' && u.role !== 'user');
   }
 
   async createAdminUser({ name, email, password, role_id }) {
@@ -177,38 +173,64 @@ class AdminService {
     });
 
     if (role_id) {
-      db.user_roles = (db.user_roles || []).filter((ur) => ur.user_id !== newAdmin.id);
-      db.user_roles.push({ user_id: newAdmin.id, role_id });
+      db.user_roles = (db.user_roles || []).filter((ur) => ur.user_id !== newAdmin.id && ur.userId !== newAdmin.id);
+      db.user_roles.push({ user_id: newAdmin.id, userId: newAdmin.id, role_id, roleId: role_id });
     }
 
     return newAdmin;
   }
 
-  async updateUserRole(userId, newRoleId) {
+  async updateUserRole(userId, newRoleOrId, adminId = 'usr_admin_001') {
     const user = await User.findById(userId);
     if (!user) {
       throw new Error('Target user account not found.');
     }
 
-    const role = (db.roles || []).find((r) => r.id === newRoleId || r.role_name === newRoleId);
-    const targetRole = role ? role.id : 'role_customer';
+    // Resolve role from roles table if ID or Name provided
+    const role = (db.roles || []).find(
+      (r) => r.id === newRoleOrId || r.role_name === newRoleOrId || (r.name && r.name.toLowerCase() === String(newRoleOrId).toLowerCase())
+    );
 
-    db.user_roles = (db.user_roles || []).filter((ur) => ur.user_id !== userId);
-    db.user_roles.push({ user_id: userId, role_id: targetRole });
+    const targetRoleId = role ? role.id : (newRoleOrId === 'admin' ? 'role_admin' : 'role_customer');
+    const targetRoleName = role && role.role_name && role.role_name.includes('ADMIN') ? 'admin' : (role ? (role.name || 'user') : newRoleOrId);
 
-    const updatedUser = await User.update(userId, {
-      role: role && role.role_name.includes('ADMIN') ? 'admin' : (role ? role.role_name.toLowerCase() : 'user'),
+    // Keep user_roles mapping in sync
+    db.user_roles = (db.user_roles || []).filter((ur) => ur.user_id !== userId && ur.userId !== userId);
+    db.user_roles.push({
+      id: `ur_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      user_id: userId,
+      userId: userId,
+      role_id: targetRoleId,
+      roleId: targetRoleId,
+      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     });
 
-    return updatedUser;
+    const updated = await User.update(userId, {
+      role: targetRoleName,
+    });
+
+    // Record activity log
+    await AdminActivityLog.record({
+      adminId,
+      admin_id: adminId,
+      action: 'UPDATE_USER_ROLE',
+      targetType: 'USER',
+      targetId: userId,
+      details: `Changed role of user ${user.email} to [${targetRoleName}]`,
+    });
+
+    const { password, password_hash, ...safeUser } = updated || user;
+    return safeUser;
   }
 
   async toggleUserStatus(userId) {
     const user = await User.findById(userId);
     if (!user) throw new Error('User not found.');
 
-    const newStatus = user.account_status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-    return User.update(userId, { account_status: newStatus });
+    const currentStatus = user.account_status || user.status || 'ACTIVE';
+    const newStatus = currentStatus === 'ACTIVE' || currentStatus === 'active' ? 'SUSPENDED' : 'ACTIVE';
+    return User.update(userId, { account_status: newStatus, status: newStatus.toLowerCase() });
   }
 }
 

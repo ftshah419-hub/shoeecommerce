@@ -593,8 +593,8 @@ class AdminController {
   async updateAdminRole(req, res, next) {
     try {
       const { id } = req.params;
-      const { role_id } = req.body;
-      await adminService.updateUserRole(id, role_id);
+      const role = req.body.role || req.body.role_id;
+      await adminService.updateUserRole(id, role, req.user ? req.user.id : 'usr_admin_001');
       res.redirect('/admin/admin-users?success=Administrator role permissions updated.');
     } catch (err) {
       res.redirect(`/admin/admin-users?error=${encodeURIComponent(err.message)}`);
@@ -604,6 +604,10 @@ class AdminController {
   async toggleAdminStatus(req, res, next) {
     try {
       const { id } = req.params;
+      if (req.body && req.body.role) {
+        await adminService.updateUserRole(id, req.body.role, req.user ? req.user.id : 'usr_admin_001');
+        return res.redirect('/admin/users?success=User role updated successfully.');
+      }
       await adminService.toggleUserStatus(id);
       res.redirect('/admin/admin-users?success=Admin account state toggled.');
     } catch (err) {

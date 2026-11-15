@@ -1,67 +1,190 @@
-<%- include('../partials/user-header') %>
-<%- include('../partials/navbar') %>
+<%- include('partials/header', { title: 'Sneaker Catalog & Streetwear Filters - Neleeri Sneakers' }) %>
 
-<main class="container section">
-  <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-    <div>
-      <h1 class="section-title">Sneaker Catalog</h1>
-      <p style="color: var(--text-muted); font-size: 0.95rem;">Browse all premium kicks available at Neleeri</p>
-    </div>
+<main class="w-full pt-4 bg-background min-h-screen">
+  <div class="flex flex-col w-full">
+    <!-- SHOP SUB-HERO & METRICS STRIP -->
+    <section class="w-full bg-surface-container-lowest px-4 md:px-12 pt-6 pb-8 border-b border-outline-variant/30">
+      <div class="max-w-7xl mx-auto flex flex-col gap-4">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-2 font-label-tech text-xs text-on-surface-variant uppercase tracking-wider">
+          <a class="hover:text-primary transition-colors" href="/">Home</a>
+          <span class="text-outline-variant font-bold">/</span>
+          <span class="text-primary font-semibold">Shop All Sneakers</span>
+        </nav>
 
-    <!-- Live Search & Category Filter Bar -->
-    <form action="/products" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-      <input 
-        type="text" 
-        id="catalogLiveSearch"
-        name="search" 
-        class="form-control" 
-        style="width: 220px;" 
-        placeholder="Instant live search..." 
-        value="<%= searchQuery %>"
-      >
-      <select name="category" class="form-control" style="width: 140px;" onchange="this.form.submit()">
-        <option value="">All Categories</option>
-        <option value="Running" <%= currentCategory === 'Running' ? 'selected' : '' %>>Running</option>
-        <option value="Basketball" <%= currentCategory === 'Basketball' ? 'selected' : '' %>>Basketball</option>
-        <option value="Streetwear" <%= currentCategory === 'Streetwear' ? 'selected' : '' %>>Streetwear</option>
-        <option value="Casual" <%= currentCategory === 'Casual' ? 'selected' : '' %>>Casual</option>
-      </select>
-      <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-      <% if (searchQuery || currentCategory || currentBrand) { %>
-        <a href="/products" class="btn btn-secondary btn-sm" style="color: var(--text-muted);">Reset</a>
-      <% } %>
-    </form>
-  </div>
-
-  <div class="product-grid">
-    <% if (products && products.length > 0) { %>
-      <% products.forEach(product => { %>
-        <div class="product-card">
-          <div class="product-image-wrap">
-            <span class="product-badge"><%= product.category %></span>
-            <img src="<%= product.image %>" alt="<%= product.name %>" class="product-image" loading="lazy">
+        <!-- Main Headline Block -->
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="inline-block w-2 h-2 bg-secondary-container"></span>
+              <span class="font-label-tech text-xs uppercase tracking-widest text-primary">Catalog Archive // Series 04</span>
+            </div>
+            <h1 class="font-headline-xl text-3xl sm:text-4xl text-on-surface uppercase tracking-tight font-bold">
+              ALL SNEAKERS &amp; STREETWEAR
+            </h1>
           </div>
-          <div class="product-info">
-            <span class="product-brand"><%= product.brand %></span>
-            <h3 class="product-name"><%= product.name %></h3>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-              Sizes: <%= (product.sizes || []).join(', ') %>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-              <span class="product-price">$<%= product.price.toFixed(2) %></span>
-              <a href="/products/<%= product.id %>" class="btn btn-primary btn-sm">View</a>
-            </div>
+          <div class="flex items-center gap-3 font-label-tech text-xs text-on-surface-variant bg-surface-container px-4 py-2 border border-outline-variant/30 shadow-sm">
+            <span class="text-primary font-bold"><%= products.length %> DESIGNS LOGGED</span>
+            <span class="text-outline-variant">|</span>
+            <span>SHOWING ALL STYLES</span>
           </div>
         </div>
-      <% }) %>
-    <% } else { %>
-      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-        <h3>No sneakers match your criteria.</h3>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">Try resetting your search or filter options.</p>
-        <a href="/products" class="btn btn-secondary" style="margin-top: 1rem;">View All Sneakers</a>
+
+        <!-- Filter Chips & Sorting Menu -->
+        <div class="pt-2 flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-t border-outline-variant/20">
+          <div class="flex items-center flex-wrap gap-2">
+            <span class="font-label-tech text-xs uppercase text-outline mr-1">Category Filter:</span>
+            <a href="/products" class="px-3 py-1 font-label-caps text-xs uppercase <%= !currentCategory ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest' %> transition-colors">
+              ALL
+            </a>
+            <a href="/products?category=Running" class="px-3 py-1 font-label-caps text-xs uppercase <%= currentCategory === 'Running' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest' %> transition-colors">
+              RUNNING
+            </a>
+            <a href="/products?category=Streetwear" class="px-3 py-1 font-label-caps text-xs uppercase <%= currentCategory === 'Streetwear' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest' %> transition-colors">
+              STREETWEAR
+            </a>
+            <a href="/products?category=Basketball" class="px-3 py-1 font-label-caps text-xs uppercase <%= currentCategory === 'Basketball' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest' %> transition-colors">
+              BASKETBALL
+            </a>
+            <a href="/products?category=Casual" class="px-3 py-1 font-label-caps text-xs uppercase <%= currentCategory === 'Casual' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest' %> transition-colors">
+              CASUAL
+            </a>
+            <% if (currentCategory || searchQuery) { %>
+              <a href="/products" class="font-label-tech text-xs text-secondary hover:underline uppercase ml-2">Clear Filter</a>
+            <% } %>
+          </div>
+
+          <!-- Live Sort Dropdown -->
+          <form action="/products" method="GET" class="flex items-center gap-2 self-start xl:self-auto">
+            <% if (currentCategory) { %><input type="hidden" name="category" value="<%= currentCategory %>"><% } %>
+            <% if (searchQuery) { %><input type="hidden" name="search" value="<%= searchQuery %>"><% } %>
+            <label class="font-label-tech text-xs text-outline uppercase tracking-wider whitespace-nowrap">Sort By:</label>
+            <select name="sort" onchange="this.form.submit()" class="bg-surface-container-high text-on-surface font-label-caps text-xs px-3 py-2 uppercase border border-outline-variant/30 focus:outline-none">
+              <option value="newest" <%= currentSort === 'newest' ? 'selected' : '' %>>Newest Drops</option>
+              <option value="price-asc" <%= currentSort === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="price-desc" <%= currentSort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+            </select>
+          </form>
+        </div>
       </div>
-    <% } %>
+    </section>
+
+    <!-- MAIN PRODUCT CATALOG GRID & SIDEBAR -->
+    <div class="w-full px-4 md:px-12 py-10 max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Filter Sidebar (3 cols) -->
+        <aside class="lg:col-span-3 space-y-6">
+          <!-- Search Bar -->
+          <div class="bg-surface-container-low p-4 border border-outline-variant/30 space-y-2">
+            <span class="font-label-tech text-xs uppercase text-tertiary block">Search Archive</span>
+            <form action="/products" method="GET" class="flex items-stretch">
+              <% if (currentCategory) { %><input type="hidden" name="category" value="<%= currentCategory %>"><% } %>
+              <input type="text" name="search" value="<%= searchQuery %>" placeholder="Sneaker name or model..." 
+                     class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+              <button type="submit" class="bg-primary-container px-3 text-on-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px]">search</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Size Matrix Filter -->
+          <div class="bg-surface-container-low p-4 border border-outline-variant/30 space-y-3">
+            <span class="font-label-tech text-xs uppercase text-tertiary block">Filter By Shoe Size</span>
+            <div class="grid grid-cols-4 gap-2">
+              <% [7, 8, 9, 10, 11, 12].forEach(sz => { %>
+                <a href="/products?size=<%= sz %><%= currentCategory ? '&category=' + currentCategory : '' %>"
+                   class="py-2 text-center text-xs font-label-caps border border-outline-variant/30 <%= (typeof selectedSize !== 'undefined' && String(selectedSize) === String(sz)) ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-on-surface hover:border-primary' %> transition-colors">
+                  <%= sz %>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="bg-surface-container-low p-4 border border-outline-variant/30 space-y-3">
+            <span class="font-label-tech text-xs uppercase text-tertiary block">Brand Division</span>
+            <div class="flex flex-col gap-2 text-xs font-label-tech">
+              <a href="/products?brand=Neleeri+Lab" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between">
+                <span>NELEERI LAB</span>
+                <span class="text-tertiary">#01</span>
+              </a>
+              <a href="/products?brand=Neleeri+Black" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between">
+                <span>NELEERI BLACK</span>
+                <span class="text-tertiary">#02</span>
+              </a>
+              <a href="/products?brand=Neleeri+Heritage" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between">
+                <span>NELEERI HERITAGE</span>
+                <span class="text-tertiary">#03</span>
+              </a>
+              <a href="/products?brand=Neleeri+Casual" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between">
+                <span>NELEERI CASUAL</span>
+                <span class="text-tertiary">#04</span>
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Product Grid (9 cols) -->
+        <div class="lg:col-span-9">
+          <% if (products && products.length > 0) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              <% products.forEach(product => { %>
+                <div class="bg-surface-container-low border border-outline-variant/30 hover:border-primary/60 transition-all duration-300 group flex flex-col justify-between overflow-hidden shadow-lg">
+                  <div class="relative aspect-[4/3] bg-surface-container overflow-hidden p-6 flex items-center justify-center">
+                    <span class="absolute top-3 left-3 font-label-tech text-[10px] bg-surface-container-lowest/90 px-2 py-0.5 text-primary border border-primary/20 uppercase font-mono">
+                      <%= product.category %>
+                    </span>
+                    <img src="<%= product.image %>" 
+                         alt="<%= product.name %>" 
+                         class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 drop-shadow-xl" />
+                  </div>
+
+                  <div class="p-5 flex flex-col gap-3">
+                    <div>
+                      <span class="font-label-tech text-[10px] text-secondary uppercase tracking-widest"><%= product.brand %></span>
+                      <h3 class="font-headline-sm text-lg uppercase text-on-surface font-bold group-hover:text-primary transition-colors">
+                        <%= product.name %>
+                      </h3>
+                    </div>
+
+                    <div class="flex items-center gap-1 font-label-tech text-[10px] text-tertiary">
+                      <span>SIZES:</span>
+                      <% (product.sizes || []).slice(0, 4).forEach(s => { %>
+                        <span class="bg-surface-container px-1.5 py-0.5 border border-outline-variant/20"><%= s %></span>
+                      <% }) %>
+                      <% if ((product.sizes || []).length > 4) { %><span>+<%= product.sizes.length - 4 %></span><% } %>
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-between border-t border-outline-variant/20">
+                      <span class="font-headline-md text-xl text-on-surface font-bold font-mono">
+                        $<%= Number(product.price).toFixed(2) %>
+                      </span>
+                      <a href="/products/<%= product.id %>" 
+                         class="bg-primary-container text-on-primary px-4 py-2 font-label-caps text-xs uppercase hover:bg-inverse-primary transition-colors flex items-center gap-1 font-bold">
+                        <span>Select Size</span>
+                        <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="bg-surface-container-low p-12 text-center border border-outline-variant/30 space-y-4">
+              <span class="material-symbols-outlined text-5xl text-tertiary">search_off</span>
+              <h3 class="font-headline-md text-2xl uppercase text-on-surface">No Sneaker Models Match Filter</h3>
+              <p class="text-xs text-on-surface-variant max-w-md mx-auto">No archive specimens match your exact query. Reset filters to view all drops.</p>
+              <a href="/products" class="inline-block bg-primary-container text-on-primary px-6 py-2.5 font-label-caps text-xs uppercase font-bold">
+                Reset All Filters
+              </a>
+            </div>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
   </div>
 </main>
 
-<%- include('../partials/user-footer') %>
+<%- include('partials/footer') %>
