@@ -1,93 +1,448 @@
-<%- include('../partials/admin-header') %>
-<%- include('../partials/navbar') %>
+<%- include('../partials/admin-header', { title: 'Order Fulfillment & Dispatch Matrix - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'orders', activeSection: 'Sales' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'orders', activeSection: 'Sales' }) %>
 
-<main class="container section">
-  <div class="admin-header-bar">
-    <div class="admin-title-wrap">
-      <span class="badge-admin">Admin Control Panel</span>
-      <h1>Customer Orders Oversight</h1>
-    </div>
-  </div>
-
-  <% if (typeof error !== 'undefined' && error) { %>
-    <div class="alert alert-error"><%= error %></div>
-  <% } %>
-
-  <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success"><%= success %></div>
-  <% } %>
-
-  <div class="admin-grid">
-    <%- include('../partials/admin-sidebar', { activePage: 'orders' }) %>
-
-    <div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.25rem;">Orders Log (<%= orders.length %>)</h3>
-        <input 
-          type="text" 
-          id="adminTableSearch" 
-          class="form-control" 
-          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
-          placeholder="Filter orders by customer, status..."
-        >
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-600 border border-blue-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+            LOGISTICS NODE // AIR FREIGHT
+          </span>
+          <span class="text-xs text-slate-400 font-medium">44 Regional Hubs Active</span>
+        </div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Order Fulfillment &amp; Dispatch Matrix</h1>
+        <p class="text-sm text-slate-500 mt-1">Live tracking, airway bill generation, payment settlement, and bulk courier dispatches.</p>
       </div>
 
-      <div class="admin-table-container">
-        <table class="table">
-          <thead>
+      <!-- Quick Metrics Telemetry Cards -->
+      <div class="flex items-center gap-3">
+        <div class="bg-white px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-card text-center min-w-[110px]">
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Daily SLA Pass</span>
+          <span class="text-base font-bold text-slate-900 font-heading">99.4%</span>
+        </div>
+        <div class="bg-white px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-card text-center min-w-[110px]">
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Awaiting AWB</span>
+          <span class="text-base font-bold text-orange-600 font-heading"><%= counts.unfulfilled || 0 %> Units</span>
+        </div>
+        <div class="bg-white px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-card text-center min-w-[110px]">
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Transit Value</span>
+          <span class="text-base font-bold text-blue-600 font-heading">₹48.2L</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200/90 pb-2">
+      <a 
+        href="/admin/orders" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold transition-all <%= currentStatus === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white' %>"
+      >
+        All Orders (<%= counts.all %>)
+      </a>
+      <a 
+        href="/admin/orders?status=UNFULFILLED" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 <%= currentStatus === 'UNFULFILLED' ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white' %>"
+      >
+        <span class="w-2 h-2 rounded-full <%= currentStatus === 'UNFULFILLED' ? 'bg-white' : 'bg-orange-500' %>"></span>
+        <span>Action Required (<%= counts.unfulfilled %>)</span>
+      </a>
+      <a 
+        href="/admin/orders?status=IN_TRANSIT" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold transition-all <%= currentStatus === 'IN_TRANSIT' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white' %>"
+      >
+        In Transit / Air Cargo (<%= counts.inTransit %>)
+      </a>
+      <a 
+        href="/admin/orders?status=DELIVERED" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold transition-all <%= currentStatus === 'DELIVERED' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white' %>"
+      >
+        Delivered (<%= counts.delivered %>)
+      </a>
+      <a 
+        href="/admin/orders?status=CANCELLED" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold transition-all <%= currentStatus === 'CANCELLED' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white' %>"
+      >
+        Cancelled (<%= counts.cancelled %>)
+      </a>
+    </div>
+
+    <!-- Search & Bulk Action Toolbar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card space-y-3">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- Search Input -->
+        <form method="GET" action="/admin/orders" class="w-full md:w-96 flex items-center gap-2">
+          <input type="hidden" name="status" value="<%= currentStatus %>">
+          <div class="relative flex-1">
+            <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">search</span>
+            <input 
+              name="search"
+              value="<%= searchQuery || '' %>"
+              type="text" 
+              placeholder="Search by Order ID, AWB, Customer or Phone..."
+              class="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-slate-800"
+            />
+          </div>
+          <button type="submit" class="px-3.5 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors">
+            Search
+          </button>
+        </form>
+
+        <!-- Bulk Action Form -->
+        <form id="bulkDispatchForm" method="POST" action="/admin/orders/bulk-dispatch" class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <select name="courier_name" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-700">
+              <option value="BLUEDART AIR">Bluedart Air Cargo</option>
+              <option value="DELHIVERY AIR">Delhivery Express</option>
+              <option value="DTDC PRIORITY">DTDC Priority</option>
+            </select>
+            <button 
+              type="submit" 
+              class="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+            >
+              <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+              <span>Bulk Dispatch Selected</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Quick select all info bar -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+        <label class="inline-flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+          <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-blue-600 focus:ring-blue-500" />
+          <span>Select All Filtered Drops</span>
+        </label>
+        <span>Showing <%= orders.length %> of <%= counts.all %> total orders</span>
+      </div>
+    </div>
+
+    <!-- Main Orders Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
             <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Current Status</th>
-              <th>Update Status</th>
+              <th class="py-3.5 px-4 w-10">
+                <!-- Checkbox -->
+              </th>
+              <th class="py-3.5 px-4 font-semibold">Order Ref</th>
+              <th class="py-3.5 px-4 font-semibold">Customer Details</th>
+              <th class="py-3.5 px-4 font-semibold">Product Manifest</th>
+              <th class="py-3.5 px-4 font-semibold">Valuation</th>
+              <th class="py-3.5 px-4 font-semibold">Fulfillment State</th>
+              <th class="py-3.5 px-4 font-semibold">AWB Tracking</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-slate-100">
             <% if (orders && orders.length > 0) { %>
-              <% orders.forEach(order => { %>
-                <tr>
-                  <td><strong>#<%= order.id %></strong></td>
-                  <td>
-                    <div><%= order.userName %></div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);"><%= order.userEmail %></div>
+              <% orders.forEach((order) => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors cursor-pointer" onclick="inspectOrder('<%= order.id %>')">
+                  <!-- Checkbox -->
+                  <td class="py-3.5 px-4" onclick="event.stopPropagation()">
+                    <input 
+                      type="checkbox" 
+                      name="orderIds" 
+                      value="<%= order.id %>" 
+                      form="bulkDispatchForm"
+                      class="order-select-checkbox rounded text-blue-600 focus:ring-blue-500"
+                    />
                   </td>
-                  <td>
-                    <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted);">
-                      <% order.items.forEach(i => { %>
-                        <li><%= i.name %> (US <%= i.size %>) &times; <%= i.quantity %></li>
-                      <% }) %>
-                    </ul>
-                  </td>
-                  <td><strong>$<%= order.totalAmount.toFixed(2) %></strong></td>
-                  <td>
-                    <span class="order-status-badge">
-                      <%= order.status %>
+
+                  <!-- Order Ref -->
+                  <td class="py-3.5 px-4">
+                    <span class="font-mono font-bold text-slate-900 block"><%= order.order_number || order.id %></span>
+                    <span class="text-[10px] text-slate-400 font-mono">
+                      <%= order.created_at ? new Date(order.created_at).toLocaleString() : 'Just now' %>
                     </span>
                   </td>
-                  <td>
-                    <form action="/admin/orders/<%= order.id %>/status" method="POST" style="display: flex; gap: 0.5rem;">
-                      <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 130px;">
-                        <% Object.values(orderStatuses).forEach(st => { %>
-                          <option value="<%= st %>" <%= order.status === st ? 'selected' : '' %>><%= st %></option>
-                        <% }) %>
-                      </select>
-                      <button type="submit" class="btn btn-secondary btn-sm">Save</button>
-                    </form>
+
+                  <!-- Customer Details -->
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold text-slate-800"><%= order.customer_name || 'Customer' %></div>
+                    <div class="text-[11px] text-slate-400 truncate max-w-[160px]"><%= order.customer_email %></div>
+                    <div class="text-[10px] text-slate-400 font-mono"><%= order.customer_phone || '+91 98201 44910' %></div>
+                  </td>
+
+                  <!-- Product Manifest -->
+                  <td class="py-3.5 px-4">
+                    <% if (order.items && order.items.length > 0) { %>
+                      <div class="flex items-center gap-2">
+                        <img 
+                          src="<%= order.items[0].product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=100&q=80' %>" 
+                          alt="Sneaker" 
+                          class="w-10 h-10 object-cover rounded-xl bg-slate-100 border border-slate-200/60"
+                        />
+                        <div>
+                          <span class="font-bold text-slate-800 block truncate max-w-[160px]">
+                            <%= order.items[0].product_name || 'Neleeri Sneaker' %>
+                          </span>
+                          <span class="text-[11px] text-slate-500 font-mono">
+                            <%= order.items[0].size || 'UK 9.0' %> · <%= order.items[0].quantity %> pair(s)
+                          </span>
+                        </div>
+                      </div>
+                    <% } else { %>
+                      <span class="text-slate-400">1 Sneaker Drop</span>
+                    <% } %>
+                  </td>
+
+                  <!-- Valuation -->
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold font-mono text-slate-900">
+                      ₹<%= (order.final_amount || order.totalAmount || 0).toLocaleString('en-IN') %>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 uppercase">
+                      <%= order.payment_method || 'UPI' %> · <%= order.payment_status || 'SETTLED' %>
+                    </span>
+                  </td>
+
+                  <!-- Fulfillment State -->
+                  <td class="py-3.5 px-4">
+                    <% 
+                      const ost = (order.order_status || order.status || 'PENDING').toUpperCase();
+                      let statusBadge = 'bg-slate-100 text-slate-700';
+                      if (ost === 'PROCESSING' || ost === 'PENDING') statusBadge = 'bg-orange-50 text-orange-600 border border-orange-200';
+                      else if (ost === 'SHIPPED') statusBadge = 'bg-blue-50 text-blue-600 border border-blue-200';
+                      else if (ost === 'DELIVERED') statusBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                      else if (ost === 'CANCELLED') statusBadge = 'bg-red-50 text-red-600 border border-red-200';
+                    %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= statusBadge %>">
+                      <%= ost %>
+                    </span>
+                  </td>
+
+                  <!-- Tracking -->
+                  <td class="py-3.5 px-4 font-mono text-[11px] text-slate-600">
+                    <%= order.tracking_number || 'AWB-PENDING' %>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="py-3.5 px-4 text-right" onclick="event.stopPropagation()">
+                    <div class="inline-flex items-center gap-1">
+                      <a 
+                        href="/admin/orders/<%= order.id %>/invoice" 
+                        target="_blank" 
+                        class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Print Invoice"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">receipt_long</span>
+                      </a>
+                      <a 
+                        href="/admin/orders/<%= order.id %>/label" 
+                        target="_blank" 
+                        class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Print Shipping Label"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">print</span>
+                      </a>
+                      <button 
+                        type="button" 
+                        onclick="inspectOrder('<%= order.id %>')" 
+                        class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Inspect Order Details"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               <% }) %>
             <% } else { %>
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders found.</td>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">shopping_bag</span>
+                  <p class="font-medium text-sm text-slate-600">No orders match the current filter.</p>
+                </td>
               </tr>
             <% } %>
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
 </main>
+
+<!-- Slide-Over Order Inspector Drawer -->
+<div id="orderDrawerBackdrop" class="hidden fixed inset-0 z-50 modal-backdrop transition-opacity" onclick="closeOrderDrawer()"></div>
+<div id="orderInspectorDrawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 overflow-y-auto border-l border-slate-200">
+  <div id="drawerContent" class="p-6 space-y-6">
+    <!-- Populated by JavaScript -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-900 font-heading">Loading Order Details...</h3>
+      <button onclick="closeOrderDrawer()" class="p-1 text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSelectAll(masterCheckbox) {
+    const checkboxes = document.querySelectorAll('.order-select-checkbox');
+    checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+  }
+
+  function closeOrderDrawer() {
+    document.getElementById('orderInspectorDrawer').classList.add('translate-x-full');
+    document.getElementById('orderDrawerBackdrop').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  async function inspectOrder(orderId) {
+    const drawer = document.getElementById('orderInspectorDrawer');
+    const backdrop = document.getElementById('orderDrawerBackdrop');
+    const container = document.getElementById('drawerContent');
+
+    backdrop.classList.remove('hidden');
+    drawer.classList.remove('translate-x-full');
+    document.body.classList.add('overflow-hidden');
+
+    container.innerHTML = `
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900 font-heading">Loading Order Inspection...</h3>
+        <button onclick="closeOrderDrawer()" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+      <div class="p-12 text-center text-slate-400">
+        <div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs mt-3">Fetching telemetry from database...</p>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/admin/orders/' + orderId);
+      const data = await res.json();
+      const order = data.order;
+      const addr = order.shipping_address || {};
+
+      container.innerHTML = `
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-sm font-bold text-slate-900">${order.order_number || order.id}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-600 border border-blue-200">
+                ${order.order_status || order.status}
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Placed on ${new Date(order.created_at || Date.now()).toLocaleString()}</p>
+          </div>
+          <button onclick="closeOrderDrawer()" class="p-1 text-slate-400 hover:text-slate-600">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        <!-- Customer & Delivery Coordinates -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Customer &amp; Shipping Coordinates</span>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-slate-900">${order.customer_name || 'Customer'}</span>
+            <span class="text-xs text-slate-500 font-mono">${order.customer_phone || '+91 98201 44910'}</span>
+          </div>
+          <p class="text-xs text-slate-600">${order.customer_email || ''}</p>
+          <div class="pt-2 border-t border-slate-200/60 text-xs text-slate-700">
+            <span class="font-medium text-slate-800">Destination:</span> 
+            ${addr.address_line1 || 'Studio 402, Skyline Heights, 14th Road'}, 
+            ${addr.city || 'Mumbai'}, ${addr.state || 'Maharashtra'} - ${addr.postal_code || '400050'}
+          </div>
+        </div>
+
+        <!-- Line Items Manifest -->
+        <div class="space-y-3">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Physical Manifest (${(order.items || []).length} items)</span>
+          ${(order.items || []).map(item => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200">
+              <div class="flex items-center gap-3">
+                <img src="${item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=100&q=80'}" class="w-12 h-12 object-cover rounded-xl bg-slate-100" />
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900">${item.product_name || 'Neleeri Sneaker'}</h4>
+                  <p class="text-[11px] text-slate-500 font-mono">Size: ${item.size || 'UK 9.0'} · Qty: ${item.quantity}</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold font-mono text-slate-900">₹${(item.price || 0).toLocaleString('en-IN')}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Financial Valuation Breakdown -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+          <div class="flex justify-between text-slate-600">
+            <span>Subtotal</span>
+            <span class="font-mono">₹${(order.total_amount || order.final_amount || 0).toLocaleString('en-IN')}</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>GST &amp; Logistics Tax</span>
+            <span class="font-mono">Included (18%)</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Shipping</span>
+            <span class="text-emerald-600 font-semibold">FREE (Air Express)</span>
+          </div>
+          <div class="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-slate-900">
+            <span>Total Valuation</span>
+            <span class="font-mono text-blue-600">₹${(order.final_amount || order.totalAmount || 0).toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+
+        <!-- Update Order Status Form -->
+        <form method="POST" action="/admin/orders/${order.id}/status" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Update Lifecycle Status</span>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Order Status</label>
+              <select name="order_status" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600">
+                <option value="PROCESSING" ${order.order_status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
+                <option value="SHIPPED" ${order.order_status === 'SHIPPED' ? 'selected' : ''}>Shipped / In Transit</option>
+                <option value="DELIVERED" ${order.order_status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                <option value="CANCELLED" ${order.order_status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Carrier Courier</label>
+              <select name="courier_name" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600">
+                <option value="BLUEDART AIR">Bluedart Air Express</option>
+                <option value="DELHIVERY AIR">Delhivery Air Cargo</option>
+                <option value="DTDC PRIORITY">DTDC Priority</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tracking Number (AWB)</label>
+            <input type="text" name="tracking_number" value="${order.tracking_number || ''}" placeholder="BLUEDART-EXP-XXXX" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-800" />
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm">
+            Save Status &amp; Manifest
+          </button>
+        </form>
+
+        <!-- Printable Document Actions -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <a href="/admin/orders/${order.id}/invoice" target="_blank" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all">
+            <span class="material-symbols-outlined text-[17px]">receipt</span>
+            <span>Print Invoice</span>
+          </a>
+          <a href="/admin/orders/${order.id}/label" target="_blank" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-semibold rounded-xl transition-all">
+            <span class="material-symbols-outlined text-[17px]">print</span>
+            <span>Waybill Label</span>
+          </a>
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = `
+        <div class="p-6 text-center text-red-500 text-xs">
+          Failed to load order inspection. ${e.message}
+        </div>
+      `;
+    }
+  }
+</script>
 
 <%- include('../partials/admin-footer') %>

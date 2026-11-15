@@ -1,141 +1,457 @@
-<%- include('../partials/admin-header') %>
-<%- include('../partials/navbar') %>
+<%- include('../partials/admin-header', { title: 'Products & Sneaker Catalog - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'products', activeSection: 'Catalog' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'products', activeSection: 'Catalog' }) %>
 
-<main class="container section">
-  <div class="admin-header-bar">
-    <div class="admin-title-wrap">
-      <span class="badge-admin">Admin Control Panel</span>
-      <h1>Sneaker Inventory Management</h1>
-    </div>
-  </div>
-
-  <% if (typeof error !== 'undefined' && error) { %>
-    <div class="alert alert-error"><%= error %></div>
-  <% } %>
-
-  <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success"><%= success %></div>
-  <% } %>
-
-  <div class="admin-grid">
-    <%- include('../partials/admin-sidebar', { activePage: 'products' }) %>
-
-    <div>
-      <!-- Add Sneaker Form with Live Image Preview -->
-      <div style="background: var(--bg-card); padding: 1.75rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 1.25rem;">+ Add New Sneaker to Catalog</h3>
-        <form action="/admin/products" method="POST">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label">Sneaker Model Name *</label>
-              <input type="text" name="name" class="form-control" placeholder="e.g. Neleeri Velocity Pro" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Brand / Line *</label>
-              <input type="text" name="brand" class="form-control" placeholder="e.g. Neleeri Lab" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Category</label>
-              <select name="category" class="form-control">
-                <option value="Running">Running</option>
-                <option value="Basketball">Basketball</option>
-                <option value="Streetwear">Streetwear</option>
-                <option value="Casual">Casual</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Price ($ USD) *</label>
-              <input type="number" step="0.01" name="price" class="form-control" placeholder="159.99" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Stock Units</label>
-              <input type="number" name="stock" class="form-control" placeholder="25" value="20" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Sizes (comma-separated)</label>
-              <input type="text" name="sizes" class="form-control" placeholder="8, 9, 10, 11, 12" value="8, 9, 10, 11, 12">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Image URL</label>
-            <input 
-              type="url" 
-              id="adminSneakerImageUrl" 
-              name="image" 
-              class="form-control" 
-              placeholder="https://images.unsplash.com/..." 
-              value="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80"
-            >
-            <div id="adminSneakerImagePreview"></div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" rows="2" placeholder="Engineered with breathable mesh and responsive cushioning..."></textarea>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
-            <input type="checkbox" id="featured" name="featured" value="true">
-            <label for="featured" style="font-size: 0.9rem; color: var(--text-muted); cursor: pointer;">Feature on Homepage</label>
-          </div>
-
-          <button type="submit" class="btn btn-primary">Create Sneaker</button>
-        </form>
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Sneaker Product Catalog</h1>
+        <p class="text-sm text-slate-500 mt-1">Manage footwear silhouettes, brand divisions, pricing, categories, and inventory stock.</p>
       </div>
 
-      <!-- Inventory Table with Live Table Search -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.25rem;">Current Sneaker Inventory (<%= products.length %>)</h3>
-        <input 
-          type="text" 
-          id="adminTableSearch" 
-          class="form-control" 
-          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
-          placeholder="Filter sneakers by name, brand..."
+      <div class="flex items-center gap-3">
+        <a 
+          href="/admin/categories" 
+          class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 shadow-xs transition-colors"
         >
+          <span class="material-symbols-outlined text-[18px]">category</span>
+          <span>Categories</span>
+        </a>
+        <button 
+          type="button" 
+          onclick="openModal('addProductModal')" 
+          class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+        >
+          <span class="material-symbols-outlined text-[18px]">add_circle</span>
+          <span>Add New Sneaker</span>
+        </button>
       </div>
+    </div>
 
-      <div class="admin-table-container">
-        <table class="table">
-          <thead>
+    <!-- Stats Snapshot -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Total Silhouettes</span>
+        <div class="text-xl font-bold text-slate-900 font-heading mt-1"><%= products.length %></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Featured Drops</span>
+        <div class="text-xl font-bold text-blue-600 font-heading mt-1">
+          <%= products.filter(p => p.is_featured || p.featured).length %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">In Stock</span>
+        <div class="text-xl font-bold text-emerald-600 font-heading mt-1">
+          <%= products.filter(p => (p.stock || 0) > 15).length %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Low Stock Alerts</span>
+        <div class="text-xl font-bold text-amber-600 font-heading mt-1">
+          <%= products.filter(p => (p.stock || 0) <= 15).length %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filters Bar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card flex flex-col md:flex-row items-center justify-between gap-4">
+      <form method="GET" action="/admin/products" class="w-full flex flex-col sm:flex-row items-center gap-3">
+        <!-- Search -->
+        <div class="relative flex-1 w-full">
+          <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">search</span>
+          <input 
+            name="search"
+            value="<%= searchQuery || '' %>"
+            class="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-slate-800"
+            placeholder="Search sneaker name, SKU, brand..."
+            type="text"
+          />
+        </div>
+
+        <!-- Category Filter -->
+        <select 
+          name="category" 
+          onchange="this.form.submit()" 
+          class="w-full sm:w-44 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-700 cursor-pointer"
+        >
+          <option value="">All Categories</option>
+          <% (categories || []).forEach(cat => { %>
+            <option value="<%= cat.name %>" <%= currentCategory === cat.name ? 'selected' : '' %>><%= cat.name %></option>
+          <% }) %>
+        </select>
+
+        <!-- Stock Status Filter -->
+        <select 
+          name="stock_status" 
+          onchange="this.form.submit()" 
+          class="w-full sm:w-44 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-700 cursor-pointer"
+        >
+          <option value="ALL" <%= currentStockStatus === 'ALL' ? 'selected' : '' %>>All Stock Status</option>
+          <option value="in_stock" <%= currentStockStatus === 'in_stock' ? 'selected' : '' %>>In Stock (>15)</option>
+          <option value="low_stock" <%= currentStockStatus === 'low_stock' ? 'selected' : '' %>>Low Stock (≤15)</option>
+          <option value="out_of_stock" <%= currentStockStatus === 'out_of_stock' ? 'selected' : '' %>>Out of Stock (0)</option>
+        </select>
+
+        <button type="submit" class="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors w-full sm:w-auto">
+          Filter
+        </button>
+        <% if (searchQuery || currentCategory || (currentStockStatus && currentStockStatus !== 'ALL')) { %>
+          <a href="/admin/products" class="px-3 py-2 text-xs text-slate-500 hover:text-slate-800 transition-colors">Reset</a>
+        <% } %>
+      </form>
+    </div>
+
+    <!-- Products Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
             <tr>
-              <th>Preview</th>
-              <th>Name</th>
-              <th>Brand / Cat</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Featured</th>
-              <th>Action</th>
+              <th class="py-3.5 px-4 font-semibold">Sneaker Silhouette</th>
+              <th class="py-3.5 px-4 font-semibold">Category</th>
+              <th class="py-3.5 px-4 font-semibold">Model SKU</th>
+              <th class="py-3.5 px-4 font-semibold">Price (INR)</th>
+              <th class="py-3.5 px-4 font-semibold">Stock</th>
+              <th class="py-3.5 px-4 font-semibold">Featured</th>
+              <th class="py-3.5 px-4 font-semibold">Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <% products.forEach(product => { %>
+          <tbody class="divide-y divide-slate-100">
+            <% if (products && products.length > 0) { %>
+              <% products.forEach(product => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <!-- Silhouette & Brand -->
+                  <td class="py-3.5 px-4">
+                    <div class="flex items-center gap-3">
+                      <img 
+                        src="<%= product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80' %>" 
+                        alt="<%= product.name %>" 
+                        class="w-12 h-12 object-cover rounded-xl bg-slate-100 border border-slate-200/60"
+                      />
+                      <div>
+                        <div class="font-bold text-slate-900 hover:text-blue-600 transition-colors">
+                          <%= product.name %>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono"><%= product.brand || 'Neleeri Lab' %></div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Category -->
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">
+                      <%= product.categoryName || product.category_id || 'Sneakers' %>
+                    </span>
+                  </td>
+
+                  <!-- SKU -->
+                  <td class="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                    <%= product.model_code || 'NL-SNEAKER' %>
+                  </td>
+
+                  <!-- Price -->
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold font-mono text-slate-900">
+                      ₹<%= (product.sale_price || product.price || 0).toLocaleString('en-IN') %>
+                    </div>
+                    <% if (product.base_price && product.base_price > (product.sale_price || product.price)) { %>
+                      <div class="text-[10px] text-slate-400 line-through font-mono">
+                        ₹<%= product.base_price.toLocaleString('en-IN') %>
+                      </div>
+                    <% } %>
+                  </td>
+
+                  <!-- Stock -->
+                  <td class="py-3.5 px-4">
+                    <% 
+                      const st = product.stock || 0;
+                      let badge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                      let label = `${st} Pairs`;
+                      if (st <= 0) {
+                        badge = 'bg-red-50 text-red-600 border border-red-200';
+                        label = 'Out of Stock';
+                      } else if (st <= 15) {
+                        badge = 'bg-amber-50 text-amber-600 border border-amber-200';
+                        label = `${st} Low Stock`;
+                      }
+                    %>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= badge %>">
+                      <%= label %>
+                    </span>
+                  </td>
+
+                  <!-- Featured -->
+                  <td class="py-3.5 px-4">
+                    <% if (product.is_featured || product.featured) { %>
+                      <span class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600">
+                        <span class="material-symbols-outlined text-[15px]">star</span>
+                        <span>Featured</span>
+                      </span>
+                    <% } else { %>
+                      <span class="text-slate-400 text-xs">—</span>
+                    <% } %>
+                  </td>
+
+                  <!-- Status -->
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold <%= product.is_active !== false ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' %>">
+                      <span class="w-1.5 h-1.5 rounded-full <%= product.is_active !== false ? 'bg-emerald-500' : 'bg-slate-400' %>"></span>
+                      <span><%= product.is_active !== false ? 'ACTIVE' : 'INACTIVE' %></span>
+                    </span>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="py-3.5 px-4 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <a 
+                        href="/admin/variants?product_id=<%= product.id %>" 
+                        class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Manage Variants"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">style</span>
+                      </a>
+                      <button 
+                        type="button" 
+                        onclick="editProduct(<%= JSON.stringify(product) %>)" 
+                        class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Edit Sneaker"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">edit</span>
+                      </button>
+                      <form method="POST" action="/admin/products/<%= product.id %>/delete" onsubmit="return confirm('Archive <%= product.name %>?');" class="inline">
+                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100" title="Delete Sneaker">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
               <tr>
-                <td>
-                  <img src="<%= product.image %>" alt="<%= product.name %>" style="width: 50px; height: 40px; object-fit: cover; border-radius: 4px;">
-                </td>
-                <td><strong><%= product.name %></strong></td>
-                <td><%= product.brand %> (<%= product.category %>)</td>
-                <td>$<%= product.price.toFixed(2) %></td>
-                <td>
-                  <span style="font-weight: 700; color: <%= product.stock < 10 ? 'var(--danger)' : 'var(--success)' %>">
-                    <%= product.stock %> units
-                  </span>
-                </td>
-                <td><%= product.featured ? '⭐ Yes' : 'No' %></td>
-                <td>
-                  <form class="confirm-delete-form" action="/admin/products/<%= product.id %>/delete" method="POST">
-                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger);">Delete</button>
-                  </form>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">inventory_2</span>
+                  <p class="font-medium text-sm text-slate-600">No sneakers matched your filter criteria.</p>
+                  <p class="text-xs text-slate-400 mt-1">Try resetting the search filters or add a new sneaker silhouette.</p>
                 </td>
               </tr>
-            <% }) %>
+            <% } %>
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
 </main>
+
+<!-- Modal: Add Sneaker -->
+<div id="addProductModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-elevated border border-slate-200">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 font-heading">Add New Sneaker Silhouette</h3>
+        <p class="text-xs text-slate-500">Create product drop, pricing tiers, and inventory.</p>
+      </div>
+      <button onclick="closeModal('addProductModal')" class="text-slate-400 hover:text-slate-600 p-1">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <form method="POST" action="/admin/products" class="space-y-4 mt-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sneaker Name *</label>
+        <input type="text" name="name" required placeholder="e.g. N04 Apex Vapor Glide" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Brand / Lab *</label>
+          <input type="text" name="brand" value="Neleeri Lab" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Category *</label>
+          <select name="category_id" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800">
+            <% (categories || []).forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Model SKU</label>
+          <input type="text" name="model_code" placeholder="NL-APX-01" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sale Price (₹) *</label>
+          <input type="number" name="sale_price" required placeholder="7497" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Regular Price (₹)</label>
+          <input type="number" name="base_price" placeholder="8999" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Initial Stock Units *</label>
+          <input type="number" name="stock" value="40" required min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Primary Color</label>
+          <input type="text" name="color" placeholder="Cobalt / Obsidian" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hero Image URL</label>
+        <input type="url" name="image" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Technical Description</label>
+        <textarea name="description" rows="2" placeholder="Engineered upper mesh, reactive foam sole..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800"></textarea>
+      </div>
+
+      <div class="flex items-center gap-6 pt-2">
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+          <input type="checkbox" name="featured" value="true" class="rounded text-blue-600 focus:ring-blue-500" />
+          <span>Mark as Featured Sneaker</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+          <input type="checkbox" name="is_active" value="true" checked class="rounded text-blue-600 focus:ring-blue-500" />
+          <span>Active in Storefront</span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('addProductModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all">
+          Deploy Sneaker
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Sneaker -->
+<div id="editProductModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-elevated border border-slate-200">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 font-heading">Edit Sneaker Silhouette</h3>
+        <p class="text-xs text-slate-500">Update specifications, pricing, stock, and status.</p>
+      </div>
+      <button onclick="closeModal('editProductModal')" class="text-slate-400 hover:text-slate-600 p-1">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <form id="editProductForm" method="POST" action="" class="space-y-4 mt-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sneaker Name *</label>
+        <input id="edit_name" type="text" name="name" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Brand</label>
+          <input id="edit_brand" type="text" name="brand" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Category</label>
+          <select id="edit_category_id" name="category_id" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800">
+            <% (categories || []).forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Model SKU</label>
+          <input id="edit_model_code" type="text" name="model_code" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sale Price (₹) *</label>
+          <input id="edit_price" type="number" name="sale_price" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Regular Price (₹)</label>
+          <input id="edit_base_price" type="number" name="base_price" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Stock Units</label>
+          <input id="edit_stock" type="number" name="stock" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Color</label>
+          <input id="edit_color" type="text" name="color" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hero Image URL</label>
+        <input id="edit_image" type="url" name="image" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+      </div>
+
+      <div class="flex items-center gap-6 pt-2">
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+          <input id="edit_featured" type="checkbox" name="featured" value="true" class="rounded text-blue-600 focus:ring-blue-500" />
+          <span>Mark as Featured</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+          <input id="edit_is_active" type="checkbox" name="is_active" value="true" class="rounded text-blue-600 focus:ring-blue-500" />
+          <span>Active in Storefront</span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('editProductModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function editProduct(product) {
+    document.getElementById('editProductForm').action = '/admin/products/' + product.id + '/edit';
+    document.getElementById('edit_name').value = product.name || '';
+    document.getElementById('edit_brand').value = product.brand || 'Neleeri Lab';
+    document.getElementById('edit_category_id').value = product.category_id || '';
+    document.getElementById('edit_model_code').value = product.model_code || '';
+    document.getElementById('edit_price').value = product.sale_price || product.price || 0;
+    document.getElementById('edit_base_price').value = product.base_price || product.price || 0;
+    document.getElementById('edit_stock').value = product.stock || 0;
+    document.getElementById('edit_color').value = product.color || '';
+    document.getElementById('edit_image').value = product.image || '';
+    document.getElementById('edit_featured').checked = Boolean(product.is_featured || product.featured);
+    document.getElementById('edit_is_active').checked = product.is_active !== false;
+    openModal('editProductModal');
+  }
+
+  // Open modal if openModal query param is present
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('openModal') === 'true') {
+    openModal('addProductModal');
+  }
+</script>
 
 <%- include('../partials/admin-footer') %>

@@ -1,0 +1,208 @@
+<%- include('../partials/admin-header', { title: 'Coupons & Drop Promotions - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'coupons', activeSection: 'Sales' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'coupons', activeSection: 'Sales' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Coupons &amp; Drop Promotions</h1>
+        <p class="text-sm text-slate-500 mt-1">Configure discount vouchers, minimum order thresholds, and coupon redemption caps.</p>
+      </div>
+
+      <button 
+        type="button" 
+        onclick="openModal('createCouponModal')" 
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+      >
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        <span>Create New Coupon</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Configured Codes</span>
+        <div class="text-xl font-bold text-slate-900 font-heading mt-1"><%= coupons.length %></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Active Campaigns</span>
+        <div class="text-xl font-bold text-emerald-600 font-heading mt-1">
+          <%= coupons.filter(c => c.is_active).length %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Total Redemptions</span>
+        <div class="text-xl font-bold text-blue-600 font-heading mt-1">
+          <%= coupons.reduce((sum, c) => sum + (c.used_count || 0), 0) %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Average Discount</span>
+        <div class="text-xl font-bold text-indigo-600 font-heading mt-1">15% OFF</div>
+      </div>
+    </div>
+
+    <!-- Coupons Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Coupon Code</th>
+              <th class="py-3.5 px-4 font-semibold">Discount Type &amp; Value</th>
+              <th class="py-3.5 px-4 font-semibold">Min. Order Amount</th>
+              <th class="py-3.5 px-4 font-semibold">Maximum Discount</th>
+              <th class="py-3.5 px-4 font-semibold">Redemptions</th>
+              <th class="py-3.5 px-4 font-semibold">Expiry Date</th>
+              <th class="py-3.5 px-4 font-semibold">Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (coupons && coupons.length > 0) { %>
+              <% coupons.forEach(c => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4">
+                    <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono font-bold text-xs border border-blue-200 tracking-wider">
+                      <%= c.code %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold text-slate-900 font-mono">
+                      <% if (c.discount_type === 'percentage') { %>
+                        <%= c.discount_value %>% OFF
+                      <% } else { %>
+                        ₹<%= c.discount_value %> FLAT OFF
+                      <% } %>
+                    </div>
+                    <span class="text-[10px] text-slate-400 uppercase font-mono"><%= c.discount_type %></span>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                    <%= c.min_order_amount ? '₹' + c.min_order_amount.toLocaleString('en-IN') : 'No Minimum' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                    <%= c.max_discount ? '₹' + c.max_discount.toLocaleString('en-IN') : 'No Cap' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono text-slate-800">
+                    <span class="font-bold"><%= c.used_count || 0 %></span> / <%= c.usage_limit || '∞' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono text-slate-600">
+                    <%= c.valid_until ? new Date(c.valid_until).toLocaleDateString() : 'Never expires' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold <%= c.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' %>">
+                      <span class="w-1.5 h-1.5 rounded-full <%= c.is_active ? 'bg-emerald-500' : 'bg-slate-400' %>"></span>
+                      <span><%= c.is_active ? 'ACTIVE' : 'DISABLED' %></span>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <form method="POST" action="/admin/coupons/<%= c.id %>/toggle" class="inline">
+                        <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-lg <%= c.is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' %> transition-colors">
+                          <%= c.is_active ? 'Disable' : 'Enable' %>
+                        </button>
+                      </form>
+                      <form method="POST" action="/admin/coupons/<%= c.id %>/delete" onsubmit="return confirm('Delete coupon <%= c.code %>?');" class="inline">
+                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100" title="Delete Coupon">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">confirmation_number</span>
+                  <p class="font-medium text-sm text-slate-600">No discount coupons configured yet.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal: Create Coupon -->
+<div id="createCouponModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-elevated border border-slate-200">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 font-heading">Create Promotion Coupon</h3>
+        <p class="text-xs text-slate-500">Configure discount code, rules, thresholds, and limits.</p>
+      </div>
+      <button onclick="closeModal('createCouponModal')" class="text-slate-400 hover:text-slate-600 p-1">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <form method="POST" action="/admin/coupons" class="space-y-4 mt-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Coupon Promo Code *</label>
+        <input type="text" name="code" required placeholder="e.g. DROP20" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 uppercase font-mono font-bold text-slate-800" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Discount Type *</label>
+          <select name="discount_type" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800">
+            <option value="percentage">Percentage (% OFF)</option>
+            <option value="fixed">Fixed Amount (₹ FLAT)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Discount Value *</label>
+          <input type="number" name="discount_value" required value="15" min="1" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Min. Order Value (₹)</label>
+          <input type="number" name="min_order_amount" value="2500" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Max Cap Discount (₹)</label>
+          <input type="number" name="max_discount" value="1500" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Usage Limit (Units)</label>
+          <input type="number" name="usage_limit" value="100" min="1" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Expiry Date</label>
+          <input type="date" name="valid_until" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('createCouponModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all">
+          Deploy Coupon
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/admin-footer') %>

@@ -1,0 +1,135 @@
+<%- include('../partials/admin-header', { title: 'Reviews & Squad Moderation - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'reviews', activeSection: 'Customers' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'reviews', activeSection: 'Customers' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Customer Reviews &amp; Moderation</h1>
+        <p class="text-sm text-slate-500 mt-1">Audit customer feedback, fitment ratings, and approve or hide community comments on storefront.</p>
+      </div>
+
+      <!-- Filters Form -->
+      <form method="GET" action="/admin/reviews" class="flex flex-wrap items-center gap-2">
+        <select 
+          name="status" 
+          onchange="this.form.submit()" 
+          class="px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 shadow-xs cursor-pointer"
+        >
+          <option value="ALL" <%= currentStatus === 'ALL' ? 'selected' : '' %>>All Statuses</option>
+          <option value="APPROVED" <%= currentStatus === 'APPROVED' ? 'selected' : '' %>>Approved (Live)</option>
+          <option value="PENDING" <%= currentStatus === 'PENDING' ? 'selected' : '' %>>Pending Audit</option>
+          <option value="REJECTED" <%= currentStatus === 'REJECTED' ? 'selected' : '' %>>Hidden / Rejected</option>
+        </select>
+
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+          <input 
+            name="search"
+            value="<%= searchQuery || '' %>"
+            class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-800 shadow-xs"
+            placeholder="Search reviewer or sneaker..."
+            type="text"
+          />
+        </div>
+        <button type="submit" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+          Filter
+        </button>
+      </form>
+    </div>
+
+    <!-- Reviews Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Reviewer</th>
+              <th class="py-3.5 px-4 font-semibold">Sneaker Silhouette</th>
+              <th class="py-3.5 px-4 font-semibold">Rating Score</th>
+              <th class="py-3.5 px-4 font-semibold">Review Title &amp; Comment</th>
+              <th class="py-3.5 px-4 font-semibold">Date Submitted</th>
+              <th class="py-3.5 px-4 font-semibold">Moderation Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Moderate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (reviews && reviews.length > 0) { %>
+              <% reviews.forEach(r => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">
+                    <%= r.user_name || 'Sneakerhead' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <span class="font-semibold text-slate-800 block"><%= r.product_name || 'Neleeri Sneaker' %></span>
+                    <span class="text-[10px] text-slate-400 font-mono">ID: <%= r.product_id %></span>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <div class="flex items-center gap-1 text-amber-400">
+                      <% for (let i = 1; i <= 5; i++) { %>
+                        <span class="material-symbols-outlined text-[16px]"><%= i <= r.rating ? 'star' : 'star_border' %></span>
+                      <% } %>
+                      <span class="font-bold text-slate-800 font-mono ml-1"><%= r.rating %>/5</span>
+                    </div>
+                  </td>
+
+                  <td class="py-3.5 px-4 max-w-md">
+                    <h4 class="font-bold text-slate-900 truncate"><%= r.title || 'Verified Fitment' %></h4>
+                    <p class="text-slate-600 text-xs mt-0.5 line-clamp-2"><%= r.comment %></p>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono text-slate-500">
+                    <%= r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <% 
+                      const st = (r.status || 'APPROVED').toUpperCase();
+                      let statusBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                      if (st === 'PENDING') statusBadge = 'bg-amber-50 text-amber-600 border border-amber-200';
+                      else if (st === 'REJECTED') statusBadge = 'bg-red-50 text-red-600 border border-red-200';
+                    %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= statusBadge %>">
+                      <%= st %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <form method="POST" action="/admin/reviews/<%= r.id %>/status" class="inline">
+                        <input type="hidden" name="status" value="<%= st === 'APPROVED' ? 'REJECTED' : 'APPROVED' %>">
+                        <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-lg <%= st === 'APPROVED' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' %> transition-colors">
+                          <%= st === 'APPROVED' ? 'Hide' : 'Approve' %>
+                        </button>
+                      </form>
+                      <form method="POST" action="/admin/reviews/<%= r.id %>/delete" onsubmit="return confirm('Delete review permanently?');" class="inline">
+                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100" title="Delete Review">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">reviews</span>
+                  <p class="font-medium text-sm text-slate-600">No customer reviews found.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

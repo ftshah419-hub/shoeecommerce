@@ -1,13 +1,144 @@
-<footer class="footer" style="background: var(--bg-card); border-top: 1px solid var(--border);">
-  <div class="container">
-    <p>&copy; <%= new Date().getFullYear() %> Neleeri Sneakers Admin Portal. Restricted Access.</p>
-    <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #6b7280;">
-      Logged in as: <strong><%= locals.currentUser ? locals.currentUser.email : 'Admin' %></strong> (Role: <%= locals.currentUser ? locals.currentUser.role : 'admin' %>)
-    </p>
-  </div>
-</footer>
-<!-- Shared & Dedicated Admin Frontend Scripts -->
-<script src="/js/main.js"></script>
-<script src="/js/admin-frontend.js"></script>
+  <!-- Global Flash Toast Notification -->
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div id="flashToast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-elevated flex items-center gap-3 border border-slate-800 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5">
+      <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+      </div>
+      <div class="text-xs font-medium"><%= success %></div>
+      <button onclick="dismissToast()" class="text-slate-400 hover:text-white ml-2 p-1">
+        <span class="material-symbols-outlined text-[16px]">close</span>
+      </button>
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div id="flashToast" class="fixed bottom-6 right-6 z-50 bg-red-950 text-red-100 px-5 py-3.5 rounded-2xl shadow-elevated flex items-center gap-3 border border-red-800 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5">
+      <div class="w-7 h-7 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[18px]">error</span>
+      </div>
+      <div class="text-xs font-medium"><%= error %></div>
+      <button onclick="dismissToast()" class="text-red-300 hover:text-white ml-2 p-1">
+        <span class="material-symbols-outlined text-[16px]">close</span>
+      </button>
+    </div>
+  <% } %>
+
+  <script>
+    // Global search shortcut Ctrl + K / Cmd + K
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('globalAdminSearch') || document.getElementById('searchQueryInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
+    // Auto dismiss toasts after 4.5 seconds
+    function dismissToast() {
+      const toast = document.getElementById('flashToast');
+      if (toast) {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }
+    setTimeout(dismissToast, 4500);
+
+    // Dropdown toggles
+    function toggleNotificationMenu() {
+      const notif = document.getElementById('notificationDropdown');
+      const prof = document.getElementById('profileDropdown');
+      if (prof) prof.classList.add('hidden');
+      if (notif) notif.classList.toggle('hidden');
+    }
+
+    function toggleProfileMenu() {
+      const notif = document.getElementById('notificationDropdown');
+      const prof = document.getElementById('profileDropdown');
+      if (notif) notif.classList.add('hidden');
+      if (prof) prof.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      const notifBtn = e.target.closest('button[onclick*="toggleNotificationMenu"]');
+      const notifMenu = e.target.closest('#notificationDropdown');
+      const profBtn = e.target.closest('button[onclick*="toggleProfileMenu"]');
+      const profMenu = e.target.closest('#profileDropdown');
+
+      if (!notifBtn && !notifMenu) {
+        const notif = document.getElementById('notificationDropdown');
+        if (notif) notif.classList.add('hidden');
+      }
+      if (!profBtn && !profMenu) {
+        const prof = document.getElementById('profileDropdown');
+        if (prof) prof.classList.add('hidden');
+      }
+    });
+
+    // Sidebar collapse & expand toggle
+    function toggleAdminSidebar() {
+      const sidebar = document.getElementById('adminSidebar');
+      const topbar = document.getElementById('adminTopbar');
+      const mainContent = document.getElementById('adminMainContent');
+
+      if (!sidebar) return;
+
+      const isCollapsed = sidebar.classList.contains('-translate-x-full') || sidebar.classList.contains('lg:-ml-64');
+
+      if (isCollapsed) {
+        // Expand
+        sidebar.classList.remove('-translate-x-full', 'lg:-ml-64');
+        if (topbar) topbar.classList.add('left-64');
+        if (topbar) topbar.classList.remove('left-0');
+        if (mainContent) mainContent.classList.add('lg:pl-64');
+        if (mainContent) mainContent.classList.remove('lg:pl-0');
+        localStorage.setItem('neleeri_sidebar_collapsed', 'false');
+      } else {
+        // Collapse
+        sidebar.classList.add('-translate-x-full', 'lg:-ml-64');
+        if (topbar) topbar.classList.remove('left-64');
+        if (topbar) topbar.classList.add('left-0');
+        if (mainContent) mainContent.classList.remove('lg:pl-64');
+        if (mainContent) mainContent.classList.add('lg:pl-0');
+        localStorage.setItem('neleeri_sidebar_collapsed', 'true');
+      }
+    }
+
+    // Restore sidebar preference
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.innerWidth >= 1024 && localStorage.getItem('neleeri_sidebar_collapsed') === 'true') {
+        const sidebar = document.getElementById('adminSidebar');
+        const topbar = document.getElementById('adminTopbar');
+        const mainContent = document.getElementById('adminMainContent');
+        if (sidebar && topbar && mainContent) {
+          sidebar.classList.add('lg:-ml-64');
+          topbar.classList.remove('left-64');
+          topbar.classList.add('left-0');
+          mainContent.classList.remove('lg:pl-64');
+          mainContent.classList.add('lg:pl-0');
+        }
+      }
+    });
+
+    // Modal open / close helpers
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+  </script>
 </body>
 </html>

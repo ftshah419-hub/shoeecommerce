@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #fff; color: #111; }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; margin: 0; }
+    }
+  </style>
+</head>
+<body class="p-8 max-w-4xl mx-auto">
+  <!-- Print action button -->
+  <div class="no-print mb-6 flex justify-between items-center bg-gray-100 p-4 rounded">
+    <div class="font-bold text-gray-700">NELEERI SNEAKERS // TAX INVOICE GENERATOR</div>
+    <div class="flex gap-2">
+      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+        Print / Save PDF
+      </button>
+      <button onclick="window.close()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+        Close Window
+      </button>
+    </div>
+  </div>
+
+  <!-- Tax Invoice Header -->
+  <div class="border-b-2 border-black pb-6 flex justify-between items-start">
+    <div>
+      <h1 class="text-3xl font-black tracking-tight font-['Space_Grotesk']">NELEERI SNEAKERS</h1>
+      <p class="text-sm text-gray-600 mt-1">High-Performance Streetwear Footwear Division</p>
+      <p class="text-xs text-gray-500">GSTIN: 27AABCN9401P1Z9 | CIN: U19201MH2026PTC394810</p>
+      <p class="text-xs text-gray-500">Warehouse Node: BOM-HUB-01, Kurla Industrial Zone, Mumbai 400070</p>
+    </div>
+    <div class="text-right">
+      <span class="inline-block bg-black text-white text-xs font-bold px-2.5 py-1 uppercase tracking-widest">
+        ORIGINAL TAX INVOICE
+      </span>
+      <h2 class="text-xl font-bold mt-2"><%= invoiceNumber %></h2>
+      <p class="text-sm text-gray-600">Date: <%= invoiceDate %></p>
+      <p class="text-sm text-gray-600">Order Ref: <strong>#<%= order.order_number %></strong></p>
+    </div>
+  </div>
+
+  <!-- Bill To & Ship To -->
+  <div class="grid grid-cols-2 gap-8 my-6 text-sm">
+    <div class="border border-gray-300 p-4 rounded">
+      <h3 class="font-bold text-gray-800 uppercase tracking-wider text-xs border-b pb-1 mb-2">Billed To / Squad Customer</h3>
+      <p class="font-bold text-base"><%= order.customer_name %></p>
+      <p class="text-gray-600"><%= order.shipping_address %></p>
+      <p class="text-gray-600 mt-1">Phone: <%= order.customer_phone || '+91 98201 44810' %></p>
+      <p class="text-gray-600">Email: <%= order.customer_email %></p>
+      <p class="text-xs text-gray-500 mt-2">Squad UID: <%= order.squad_uid || 'SQ-BOM-9022' %> (<%= order.squad_tier || 'Syndicate Black' %>)</p>
+    </div>
+
+    <div class="border border-gray-300 p-4 rounded">
+      <h3 class="font-bold text-gray-800 uppercase tracking-wider text-xs border-b pb-1 mb-2">Dispatch &amp; Air Logistics</h3>
+      <p><strong>Primary Courier:</strong> <%= order.courier_name || 'Bluedart Priority Aviation' %></p>
+      <p><strong>Tracking AWB:</strong> <%= order.tracking_number %></p>
+      <p><strong>Payment Mode:</strong> <%= order.gateway || 'UPI Instant (MPIN Verified)' %></p>
+      <p><strong>Payment Status:</strong> <%= order.payment_status %></p>
+      <p class="text-xs text-green-700 font-semibold mt-2">NFC Hardware Cryptographic Token: <%= order.nfc_token || '#NK-88294-NFC' %></p>
+    </div>
+  </div>
+
+  <!-- Line Items Table -->
+  <table class="w-full text-left my-6 text-sm border-collapse">
+    <thead>
+      <tr class="bg-gray-900 text-white text-xs uppercase tracking-wider">
+        <th class="p-3">#</th>
+        <th class="p-3">Product Description &amp; SKU</th>
+        <th class="p-3 text-center">Size</th>
+        <th class="p-3 text-right">Unit Price</th>
+        <th class="p-3 text-center">Qty</th>
+        <th class="p-3 text-right">Total (INR)</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% items.forEach((item, index) => { %>
+        <tr>
+          <td class="p-3"><%= index + 1 %></td>
+          <td class="p-3">
+            <div class="font-bold"><%= item.product_name %></div>
+            <div class="text-xs text-gray-500">SKU: <%= item.sku %> | Color: <%= item.color || 'Obsidian' %></div>
+          </td>
+          <td class="p-3 text-center font-bold"><%= item.size %></td>
+          <td class="p-3 text-right">₹<%= item.unit_price.toLocaleString('en-IN') %></td>
+          <td class="p-3 text-center font-bold"><%= item.quantity %></td>
+          <td class="p-3 text-right font-bold">₹<%= item.subtotal_price.toLocaleString('en-IN') %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Calculation Breakdown -->
+  <div class="flex justify-end my-4">
+    <div class="w-72 space-y-2 text-sm border-t-2 border-gray-900 pt-3">
+      <div class="flex justify-between">
+        <span class="text-gray-600">Subtotal Net:</span>
+        <span class="font-medium">₹<%= (grandTotal - tax).toLocaleString('en-IN') %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600">CGST (9.0%):</span>
+        <span class="font-medium">₹<%= (tax / 2).toLocaleString('en-IN') %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600">SGST (9.0%):</span>
+        <span class="font-medium">₹<%= (tax / 2).toLocaleString('en-IN') %></span>
+      </div>
+      <% if (discount > 0) { %>
+        <div class="flex justify-between text-green-700 font-bold">
+          <span>Promo Discount Applied:</span>
+          <span>-₹<%= discount.toLocaleString('en-IN') %></span>
+        </div>
+      <% } %>
+      <div class="flex justify-between text-lg font-black border-t border-b border-gray-900 py-2">
+        <span>FINAL INVOICE TOTAL:</span>
+        <span>₹<%= grandTotal.toLocaleString('en-IN') %></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signoff & Terms -->
+  <div class="border-t border-gray-300 pt-6 mt-12 grid grid-cols-2 gap-8 text-xs text-gray-500">
+    <div>
+      <h4 class="font-bold text-gray-700 uppercase mb-1">Authenticity &amp; Return Terms</h4>
+      <p>1. Every Neleeri pair carries an unhackable embedded NTAG424 micro NFC tag.</p>
+      <p>2. Keep physical box tamper seals intact for any authenticated exchange within 7 days of delivery.</p>
+    </div>
+    <div class="text-right flex flex-col items-end">
+      <div class="border-b border-black w-48 mb-1"></div>
+      <p class="font-bold text-gray-800">Authorized Signatory</p>
+      <p>Neleeri Logistics Ops Node 01</p>
+    </div>
+  </div>
+</body>
+</html>

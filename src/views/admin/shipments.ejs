@@ -1,0 +1,163 @@
+<%- include('../partials/admin-header', { title: 'Logistics & Air Cargo Telemetry - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'shipments', activeSection: 'Sales' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'shipments', activeSection: 'Sales' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Shipments &amp; Air Cargo Logistics</h1>
+        <p class="text-sm text-slate-500 mt-1">Live airway bill (AWB) tracking, courier flight manifests, and last-mile dispatch delivery.</p>
+      </div>
+
+      <!-- Filters & Search Form -->
+      <form method="GET" action="/admin/shipments" class="flex flex-wrap items-center gap-2">
+        <select 
+          name="shipping_status" 
+          onchange="this.form.submit()" 
+          class="px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 shadow-xs cursor-pointer"
+        >
+          <option value="ALL" <%= currentStatus === 'ALL' ? 'selected' : '' %>>All Freight States</option>
+          <option value="MANIFESTED" <%= currentStatus === 'MANIFESTED' ? 'selected' : '' %>>Manifested (AWB Ready)</option>
+          <option value="IN_TRANSIT" <%= currentStatus === 'IN_TRANSIT' ? 'selected' : '' %>>In Transit (Air Cargo)</option>
+          <option value="OUT_FOR_DELIVERY" <%= currentStatus === 'OUT_FOR_DELIVERY' ? 'selected' : '' %>>Out for Delivery</option>
+          <option value="DELIVERED" <%= currentStatus === 'DELIVERED' ? 'selected' : '' %>>Delivered</option>
+        </select>
+
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+          <input 
+            name="search"
+            value="<%= searchQuery || '' %>"
+            class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-800 shadow-xs"
+            placeholder="Search AWB, order, city..."
+            type="text"
+          />
+        </div>
+        <button type="submit" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+          Filter
+        </button>
+      </form>
+    </div>
+
+    <!-- Logistics Telemetry Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Total Shipments</span>
+        <div class="text-2xl font-bold text-slate-900 font-heading mt-2"><%= shipments.length %></div>
+        <span class="text-[11px] text-blue-600 font-medium mt-1 block">Air Cargo Network</span>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">In Air Cargo / Transit</span>
+        <div class="text-2xl font-bold text-blue-600 font-heading mt-2"><%= inTransitCount %></div>
+        <span class="text-[11px] text-slate-500 mt-1 block">Flight BOM → DEL / BLR</span>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Out for Delivery</span>
+        <div class="text-2xl font-bold text-orange-600 font-heading mt-2">
+          <%= typeof outForDeliveryCount !== 'undefined' ? outForDeliveryCount : (typeof manifestedCount !== 'undefined' ? manifestedCount : 0) %>
+        </div>
+        <span class="text-[11px] text-orange-500 mt-1 block">Last-Mile Dispatch</span>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Delivered Safely</span>
+        <div class="text-2xl font-bold text-emerald-600 font-heading mt-2"><%= deliveredCount %></div>
+        <span class="text-[11px] text-emerald-600 font-semibold mt-1 block">99.4% On-Time SLA</span>
+      </div>
+    </div>
+
+    <!-- Shipments Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Airway Bill (AWB)</th>
+              <th class="py-3.5 px-4 font-semibold">Order Reference</th>
+              <th class="py-3.5 px-4 font-semibold">Courier Carrier</th>
+              <th class="py-3.5 px-4 font-semibold">Destination City</th>
+              <th class="py-3.5 px-4 font-semibold">Flight / Manifest</th>
+              <th class="py-3.5 px-4 font-semibold">Shipping Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Update Telemetry</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (shipments && shipments.length > 0) { %>
+              <% shipments.forEach((s) => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4">
+                    <span class="font-mono font-bold text-slate-900 block"><%= s.tracking_number || s.id %></span>
+                    <span class="text-[10px] text-slate-400 font-mono">
+                      <%= s.shipped_at ? new Date(s.shipped_at).toLocaleString() : 'Manifested' %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                    <%= s.order_number || s.order_id %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-semibold text-slate-800">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] bg-slate-100 text-slate-700">
+                      <span class="material-symbols-outlined text-[15px]">flight</span>
+                      <span><%= s.carrier_name || 'Bluedart Express' %></span>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-medium text-slate-700">
+                    <%= s.destination_city || 'Mumbai, MH' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono text-slate-600">
+                    <%= s.estimated_delivery || 'BD-402 Air Cargo' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <% 
+                      const st = (s.shipping_status || 'MANIFESTED').toUpperCase();
+                      let statusBadge = 'bg-blue-50 text-blue-600 border border-blue-200';
+                      if (st === 'DELIVERED') statusBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                      else if (st === 'OUT_FOR_DELIVERY') statusBadge = 'bg-orange-50 text-orange-600 border border-orange-200';
+                      else if (st === 'MANIFESTED') statusBadge = 'bg-slate-100 text-slate-700 border border-slate-200';
+                    %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= statusBadge %>">
+                      <%= st %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right">
+                    <form method="POST" action="/admin/shipments/<%= s.id %>/status" class="inline-flex items-center gap-1">
+                      <select name="status" class="px-2 py-1 text-[11px] bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none">
+                        <option value="MANIFESTED" <%= st === 'MANIFESTED' ? 'selected' : '' %>>Manifested</option>
+                        <option value="IN_TRANSIT" <%= st === 'IN_TRANSIT' ? 'selected' : '' %>>In Transit</option>
+                        <option value="OUT_FOR_DELIVERY" <%= st === 'OUT_FOR_DELIVERY' ? 'selected' : '' %>>Out for Delivery</option>
+                        <option value="DELIVERED" <%= st === 'DELIVERED' ? 'selected' : '' %>>Delivered</option>
+                      </select>
+                      <button type="submit" class="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-semibold transition-colors">
+                        Save
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">local_shipping</span>
+                  <p class="font-medium text-sm text-slate-600">No air cargo shipments recorded.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

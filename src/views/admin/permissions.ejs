@@ -1,0 +1,65 @@
+<%- include('../partials/admin-header', { title: 'System Permissions Catalog - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'permissions', activeSection: 'Administration' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'permissions', activeSection: 'Administration' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">System Permissions Catalog</h1>
+        <p class="text-sm text-slate-500 mt-1">Granular permission keys enforced across backend route middlewares and service logic.</p>
+      </div>
+
+      <a 
+        href="/admin/roles" 
+        class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 shadow-xs transition-colors"
+      >
+        <span class="material-symbols-outlined text-[18px]">shield</span>
+        <span>Back to Roles</span>
+      </a>
+    </div>
+
+    <!-- Permissions Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Permission Key</th>
+              <th class="py-3.5 px-4 font-semibold">Module</th>
+              <th class="py-3.5 px-4 font-semibold">Scope Description</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Enforcement Type</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% (permissions || []).forEach(p => { %>
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3.5 px-4 font-mono font-bold text-blue-700">
+                  <%= p.permission_name || p.name %>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold uppercase">
+                    <%= p.module || 'SYSTEM' %>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-slate-700 font-medium">
+                  <%= p.description %>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Backend Middleware Guard
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>
