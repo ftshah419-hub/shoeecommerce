@@ -3,6 +3,205 @@ const userService = require('../services/userService');
 const orderService = require('../services/orderService');
 
 class UserController {
+  // ==========================================
+  // USER DASHBOARD & ACCOUNT MANAGEMENT (ERD)
+  // ==========================================
+
+  /**
+   * GET /user/dashboard
+   * Renders the tactical User Command Dashboard with real-time metrics,
+   * active dispatches, recent orders manifest, and quick actions.
+   */
+  async renderDashboard(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      const dashboardData = await userService.getUserDashboard(userId);
+
+      res.render('user/dashboard', {
+        title: 'User Command Dashboard - Neleeri Sneakers',
+        user: dashboardData.user,
+        metrics: dashboardData.metrics,
+        orders: dashboardData.orders,
+        activeOrder: dashboardData.activeOrder,
+        addresses: dashboardData.addresses,
+        defaultAddress: dashboardData.defaultAddress,
+        wishlist: dashboardData.wishlist,
+        recentLogs: dashboardData.recentLogs,
+        success: req.query.success || null,
+        error: req.query.error || null,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * GET /user/profile
+   * Renders the User Profile and Identity management view matching ERD schema
+   */
+  async renderProfile(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      const profileData = await userService.getUserProfile(userId);
+
+      res.render('user/profile', {
+        title: 'Customer Profile - Neleeri Sneakers',
+        user: profileData.user,
+        defaultAddress: profileData.defaultAddress,
+        addresses: profileData.addresses,
+        orders: profileData.orders,
+        orderSuccess: req.query.orderSuccess || null,
+        success: req.query.success || null,
+        error: req.query.error || null,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * POST or PUT /user/profile
+   * Updates user profile fields matching ERD columns (full_name, phone, profile_image)
+   */
+  async updateProfile(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      const { full_name, name, phone, profile_image } = req.body;
+
+      const updatedUser = await userService.updateUserProfile(userId, {
+        full_name: full_name || name,
+        phone,
+        profile_image,
+      });
+
+      // Update current user in res.locals if present
+      if (res.locals.currentUser) {
+        res.locals.currentUser.name = updatedUser.full_name;
+        res.locals.currentUser.full_name = updatedUser.full_name;
+      }
+
+      if (req.is('json') || req.xhr) {
+        return res.json({
+          success: true,
+          message: 'Profile updated successfully.',
+          user: updatedUser,
+        });
+      }
+
+      res.redirect('/user/profile?success=Profile updated successfully!');
+    } catch (err) {
+      if (req.is('json') || req.xhr) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      res.redirect(`/user/profile?error=${encodeURIComponent(err.message)}`);
+    }
+  }
+
+  /**
+   * GET /user/settings
+   * Renders User Account Settings, Address Book, Security & Session matrix
+   */
+  async renderSettings(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      const settingsData = await userService.getUserSettings(userId);
+
+      res.render('user/settings', {
+        title: 'Account Settings & Security - Neleeri Sneakers',
+        user: settingsData.user,
+        addresses: settingsData.addresses,
+        sessions: settingsData.sessions,
+        loginLogs: settingsData.loginLogs,
+        securityPreferences: settingsData.securityPreferences,
+        success: req.query.success || null,
+        error: req.query.error || null,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * POST /user/addresses
+   * Adds a new delivery coordinate to the addresses table
+   */
+  async addAddress(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      const {
+        full_name,
+        phone,
+        address_line1,
+        address_line2,
+        city,
+        state,
+        postal_code,
+        country,
+        address_type,
+        is_default,
+      } = req.body;
+
+      if (!address_line1 || !city || !state || !postal_code) {
+        throw new Error('Please fill in all required address fields.');
+      }
+
+      await userService.addAddress(userId, {
+        full_name: full_name || (req.user ? req.user.name : ''),
+        phone: phone || '',
+        address_line1,
+        address_line2,
+        city,
+        state,
+        postal_code,
+        country: country || 'India',
+        address_type: address_type || 'HOME',
+        is_default,
+      });
+
+      const returnUrl = req.body.return_to || '/user/settings';
+      res.redirect(`${returnUrl}?success=Address registered successfully!`);
+    } catch (err) {
+      const returnUrl = req.body.return_to || '/user/settings';
+      res.redirect(`${returnUrl}?error=${encodeURIComponent(err.message)}`);
+    }
+  }
+
+  /**
+   * POST /user/addresses/:id/delete
+   * Removes an address from addresses table
+   */
+  async deleteAddress(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      await userService.deleteAddress(userId, req.params.id);
+
+      const returnUrl = req.query.return_to || '/user/settings';
+      res.redirect(`${returnUrl}?success=Address removed successfully.`);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * POST /user/addresses/:id/default
+   * Sets target address as default
+   */
+  async setDefaultAddress(req, res, next) {
+    try {
+      const userId = req.user ? req.user.id : 'usr_customer_001';
+      await userService.setDefaultAddress(userId, req.params.id);
+
+      const returnUrl = req.query.return_to || '/user/settings';
+      res.redirect(`${returnUrl}?success=Default address updated.`);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // ==========================================
+  // STOREFRONT PUBLIC PAGES & CART LOGIC
+  // ==========================================
+
   async renderHome(req, res, next) {
     try {
       const featuredProducts = await productService.getFeaturedProducts();
@@ -99,23 +298,9 @@ class UserController {
         zipCode,
       });
 
-      res.redirect(`/profile?orderSuccess=${order.id}`);
+      res.redirect(`/user/profile?orderSuccess=${order.id}`);
     } catch (err) {
       res.redirect(`/cart?error=${encodeURIComponent(err.message)}`);
-    }
-  }
-
-  async renderProfile(req, res, next) {
-    try {
-      const orders = await userService.getUserOrders(req.user.id);
-      res.render('user/profile', {
-        title: 'My Profile - Neleeri Sneakers',
-        user: req.user,
-        orders,
-        orderSuccess: req.query.orderSuccess || null,
-      });
-    } catch (err) {
-      next(err);
     }
   }
 }

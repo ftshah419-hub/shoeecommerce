@@ -1,0 +1,148 @@
+<!-- Top Visual Scrim & User Blueprint Banner (from Stitch AI HUD) -->
+<div class="relative w-full bg-surface-container-lowest overflow-hidden border-b border-outline-variant/30">
+  <div class="absolute -right-20 -top-24 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute left-1/3 -bottom-20 w-80 h-80 bg-secondary-container/10 rounded-full blur-3xl pointer-events-none"></div>
+  
+  <div class="w-full px-4 md:px-12 pt-8 pb-6">
+    <!-- Breadcrumb & HUD Code -->
+    <div class="flex flex-wrap items-center justify-between gap-2 font-label-tech text-xs text-on-surface-variant pb-4">
+      <div class="flex items-center gap-2 uppercase tracking-wider">
+        <span class="text-tertiary">SYS // AUTH_HUB</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-primary-fixed-dim font-bold">USER_ID [<%= user.id %>]</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+        <span class="tracking-widest">STATUS: <%= user.account_status || 'ACTIVE' %></span>
+      </div>
+    </div>
+
+    <!-- Account Profile Identity Header -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <!-- Identity Section -->
+      <div class="lg:col-span-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div class="relative group">
+          <div class="w-24 h-24 sm:w-28 sm:h-28 bg-surface-container-high overflow-hidden shadow-2xl relative border-2 border-primary/40">
+            <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                 src="<%= user.profile_image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' %>" 
+                 alt="<%= user.full_name %>" />
+            <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent"></div>
+            <span class="absolute bottom-1 right-1 font-label-tech text-[9px] uppercase px-1.5 py-0.5 bg-secondary-container text-on-secondary-container font-bold">
+              LVL 3
+            </span>
+          </div>
+          <a href="/user/profile#edit-profile" aria-label="Edit Profile" class="absolute -bottom-2 -right-2 w-7 h-7 bg-primary-container text-on-primary flex items-center justify-center hover:bg-inverse-primary transition-colors shadow-md">
+            <span class="material-symbols-outlined text-[15px]">edit</span>
+          </a>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-label-tech text-[10px] uppercase px-2 py-0.5 bg-surface-container-high text-primary tracking-wider font-semibold border border-primary/30">
+              NELEERI BLACK TIER
+            </span>
+            <span class="font-label-tech text-[10px] uppercase px-2 py-0.5 bg-secondary-container/30 text-secondary tracking-wider font-semibold border border-secondary/30">
+              <%= user.account_status || 'ACTIVE' %>
+            </span>
+          </div>
+          <h1 class="font-headline-lg text-2xl sm:text-3xl uppercase text-on-surface tracking-tight font-bold">
+            <%= user.full_name || user.name || 'Member' %>
+          </h1>
+          <div class="flex items-center gap-3 font-label-tech text-xs text-on-surface-variant">
+            <span class="text-tertiary"><%= user.email %></span>
+            <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+            <span><%= user.phone || 'PHONE NOT SET' %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Tactical Metrics Row (Queried from DB) -->
+      <div class="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-surface-container-low p-3 flex flex-col justify-between shadow-sm border border-outline-variant/30">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="font-label-tech text-[10px] uppercase">Street Cred</span>
+            <span class="material-symbols-outlined text-[16px] text-primary">bolt</span>
+          </div>
+          <div class="pt-2">
+            <span class="font-headline-md text-xl text-primary font-bold"><%= (typeof metrics !== 'undefined' && metrics.streetCredPoints) ? metrics.streetCredPoints : 1840 %></span>
+            <p class="font-label-tech text-[9px] text-on-surface-variant uppercase tracking-tighter">PTS // REDEEMABLE</p>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low p-3 flex flex-col justify-between shadow-sm border border-outline-variant/30">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="font-label-tech text-[10px] uppercase">Total Orders</span>
+            <span class="material-symbols-outlined text-[16px] text-secondary">inventory_2</span>
+          </div>
+          <div class="pt-2">
+            <span class="font-headline-md text-xl text-on-surface font-bold">
+              <%= (typeof metrics !== 'undefined' && metrics.totalOrders !== undefined) ? (metrics.totalOrders < 10 ? '0' + metrics.totalOrders : metrics.totalOrders) : '02' %>
+            </span>
+            <p class="font-label-tech text-[9px] text-on-surface-variant uppercase tracking-tighter">
+              <%= (typeof metrics !== 'undefined' && metrics.deliveredOrders) ? metrics.deliveredOrders + ' DELIVERED' : 'RECORDED' %>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low p-3 flex flex-col justify-between shadow-sm border border-outline-variant/30">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="font-label-tech text-[10px] uppercase">Wishlist</span>
+            <span class="material-symbols-outlined text-[16px] text-error">favorite</span>
+          </div>
+          <div class="pt-2">
+            <span class="font-headline-md text-xl text-on-surface font-bold">
+              <%= (typeof metrics !== 'undefined' && metrics.wishlistCount !== undefined) ? (metrics.wishlistCount < 10 ? '0' + metrics.wishlistCount : metrics.wishlistCount) : '02' %>
+            </span>
+            <p class="font-label-tech text-[9px] text-on-surface-variant uppercase tracking-tighter">IN STOCK</p>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low p-3 flex flex-col justify-between shadow-sm border border-outline-variant/30">
+          <div class="flex items-center justify-between text-on-surface-variant">
+            <span class="font-label-tech text-[10px] uppercase">Dispatches</span>
+            <span class="material-symbols-outlined text-[16px] text-primary-fixed-dim">local_shipping</span>
+          </div>
+          <div class="pt-2">
+            <span class="font-headline-md text-xl text-secondary font-bold">
+              <%= (typeof metrics !== 'undefined' && metrics.activeOrders !== undefined) ? (metrics.activeOrders < 10 ? '0' + metrics.activeOrders : metrics.activeOrders) : '01' %>
+            </span>
+            <p class="font-label-tech text-[9px] text-on-surface-variant uppercase tracking-tighter">ACTIVE TRANSIT</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Hub Tabs -->
+  <div class="w-full bg-surface-container-low overflow-x-auto scrollbar-none border-t border-outline-variant/20">
+    <div class="w-full px-4 md:px-12 flex items-center space-x-2 py-2 min-w-max font-label-caps text-xs uppercase">
+      <a href="/user/dashboard" 
+         class="flex items-center gap-2 py-2.5 px-4 <%= (typeof activeTab !== 'undefined' && activeTab === 'dashboard') ? 'bg-primary-container text-on-primary font-bold shadow-md' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all">
+        <span class="material-symbols-outlined text-[16px]">dashboard</span>
+        <span>Command Dashboard</span>
+      </a>
+
+      <a href="/user/profile" 
+         class="flex items-center gap-2 py-2.5 px-4 <%= (typeof activeTab !== 'undefined' && activeTab === 'profile') ? 'bg-primary-container text-on-primary font-bold shadow-md' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all">
+        <span class="material-symbols-outlined text-[16px]">person</span>
+        <span>User Profile (ERD)</span>
+      </a>
+
+      <a href="/user/settings" 
+         class="flex items-center gap-2 py-2.5 px-4 <%= (typeof activeTab !== 'undefined' && activeTab === 'settings') ? 'bg-primary-container text-on-primary font-bold shadow-md' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all">
+        <span class="material-symbols-outlined text-[16px]">pin_drop</span>
+        <span>Addresses &amp; Settings</span>
+      </a>
+
+      <a href="/cart" class="flex items-center gap-2 py-2.5 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+        <span class="material-symbols-outlined text-[16px]">shopping_bag</span>
+        <span>Shopping Bag</span>
+      </a>
+
+      <a href="/products" class="flex items-center gap-2 py-2.5 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+        <span class="material-symbols-outlined text-[16px]">storefront</span>
+        <span>Sneaker Catalog</span>
+      </a>
+    </div>
+  </div>
+</div>
