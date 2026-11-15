@@ -1,0 +1,70 @@
+<%- include('../partials/user-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem; align-items: start;">
+    <!-- Sneaker Showcase Gallery -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
+      <img src="<%= product.image %>" alt="<%= product.name %>" style="width: 100%; height: 420px; object-fit: cover;">
+    </div>
+
+    <!-- Product Info & Size Selection -->
+    <div>
+      <span class="product-brand" style="font-size: 0.9rem;"><%= product.brand %> &bull; <%= product.category %></span>
+      <h1 style="font-size: 2.2rem; margin: 0.5rem 0 1rem;"><%= product.name %></h1>
+      <p style="font-size: 1.8rem; font-weight: 800; color: var(--accent); margin-bottom: 1.5rem;">
+        $<%= product.price.toFixed(2) %>
+      </p>
+
+      <div style="margin-bottom: 1.5rem; line-height: 1.7; color: var(--text-muted);">
+        <p><%= product.description %></p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <strong>Inventory Status:</strong>
+        <% if (product.stock > 0) { %>
+          <span style="color: var(--success); font-weight: 600;">In Stock (<%= product.stock %> available)</span>
+        <% } else { %>
+          <span style="color: var(--danger); font-weight: 600;">Out of Stock</span>
+        <% } %>
+      </div>
+
+      <!-- Add to Bag Form -->
+      <form action="/cart/add" method="POST">
+        <input type="hidden" name="productId" value="<%= product.id %>">
+        <!-- Hidden input controlled by user-frontend.js -->
+        <input type="hidden" id="selectedShoeSize" name="size" value="<%= (product.sizes && product.sizes.length > 0) ? product.sizes[0] : 9 %>">
+        
+        <div class="form-group">
+          <label class="form-label">Select US Shoe Size</label>
+          <div class="size-selector-wrap">
+            <% (product.sizes || []).forEach((size, index) => { %>
+              <div 
+                class="size-select-pill <%= index === 0 ? 'active' : '' %>" 
+                data-size="<%= size %>"
+              >
+                US <%= size %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Quantity Adjuster Component -->
+        <div class="form-group" style="margin-top: 1.25rem;">
+          <label class="form-label">Select Quantity</label>
+          <div class="quantity-widget">
+            <button type="button" id="qtyMinus" class="qty-btn">&minus;</button>
+            <input type="text" id="quantityInput" name="quantity" class="qty-input" value="1" max="<%= product.stock %>" readonly>
+            <button type="button" id="qtyPlus" class="qty-btn">&plus;</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; padding: 0.85rem 2rem; width: 100%; max-width: 320px;">
+          Add to Bag
+        </button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/user-footer') %>

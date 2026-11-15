@@ -1,0 +1,94 @@
+<%- include('../partials/admin-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div class="admin-header-bar">
+    <div class="admin-title-wrap">
+      <span class="badge-admin">Admin Control Panel</span>
+      <h1>Store Analytics & Operations</h1>
+    </div>
+    <div>
+      <a href="/admin/products" class="btn btn-primary btn-sm">+ Add New Sneaker</a>
+    </div>
+  </div>
+
+  <div class="admin-grid">
+    <%- include('../partials/admin-sidebar', { activePage: 'dashboard' }) %>
+
+    <!-- Main Admin Dashboard Area -->
+    <div>
+      <!-- Analytics Metric Cards -->
+      <div class="stats-grid">
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">Total Revenue</div>
+          <div class="admin-metric-value" style="color: var(--accent);">$<%= stats.totalRevenue.toFixed(2) %></div>
+        </div>
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">Total Orders</div>
+          <div class="admin-metric-value"><%= stats.totalOrders %></div>
+        </div>
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">Active Sneakers</div>
+          <div class="admin-metric-value"><%= stats.totalProducts %></div>
+        </div>
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">Registered Users</div>
+          <div class="admin-metric-value"><%= stats.totalUsers %></div>
+        </div>
+      </div>
+
+      <!-- Live Search & Recent Orders Table -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.25rem;">Recent Orders Oversight</h3>
+        <input 
+          type="text" 
+          id="adminTableSearch" 
+          class="form-control" 
+          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
+          placeholder="Filter recent orders..."
+        >
+      </div>
+
+      <div class="admin-table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (stats.recentOrders && stats.recentOrders.length > 0) { %>
+              <% stats.recentOrders.forEach(order => { %>
+                <tr>
+                  <td><strong>#<%= order.id %></strong></td>
+                  <td><%= order.userName %> (<%= order.userEmail %>)</td>
+                  <td>$<%= order.totalAmount.toFixed(2) %></td>
+                  <td>
+                    <span class="order-status-badge">
+                      <%= order.status %>
+                    </span>
+                  </td>
+                  <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                  <td>
+                    <a href="/admin/orders" class="btn btn-secondary btn-sm">Inspect</a>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders placed yet.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

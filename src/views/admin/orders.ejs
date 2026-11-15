@@ -1,0 +1,93 @@
+<%- include('../partials/admin-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div class="admin-header-bar">
+    <div class="admin-title-wrap">
+      <span class="badge-admin">Admin Control Panel</span>
+      <h1>Customer Orders Oversight</h1>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error"><%= error %></div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success"><%= success %></div>
+  <% } %>
+
+  <div class="admin-grid">
+    <%- include('../partials/admin-sidebar', { activePage: 'orders' }) %>
+
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.25rem;">Orders Log (<%= orders.length %>)</h3>
+        <input 
+          type="text" 
+          id="adminTableSearch" 
+          class="form-control" 
+          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
+          placeholder="Filter orders by customer, status..."
+        >
+      </div>
+
+      <div class="admin-table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Current Status</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (orders && orders.length > 0) { %>
+              <% orders.forEach(order => { %>
+                <tr>
+                  <td><strong>#<%= order.id %></strong></td>
+                  <td>
+                    <div><%= order.userName %></div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);"><%= order.userEmail %></div>
+                  </td>
+                  <td>
+                    <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted);">
+                      <% order.items.forEach(i => { %>
+                        <li><%= i.name %> (US <%= i.size %>) &times; <%= i.quantity %></li>
+                      <% }) %>
+                    </ul>
+                  </td>
+                  <td><strong>$<%= order.totalAmount.toFixed(2) %></strong></td>
+                  <td>
+                    <span class="order-status-badge">
+                      <%= order.status %>
+                    </span>
+                  </td>
+                  <td>
+                    <form action="/admin/orders/<%= order.id %>/status" method="POST" style="display: flex; gap: 0.5rem;">
+                      <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 130px;">
+                        <% Object.values(orderStatuses).forEach(st => { %>
+                          <option value="<%= st %>" <%= order.status === st ? 'selected' : '' %>><%= st %></option>
+                        <% }) %>
+                      </select>
+                      <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders found.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

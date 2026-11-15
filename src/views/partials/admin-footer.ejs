@@ -1,0 +1,13 @@
+<footer class="footer" style="background: var(--bg-card); border-top: 1px solid var(--border);">
+  <div class="container">
+    <p>&copy; <%= new Date().getFullYear() %> Neleeri Sneakers Admin Portal. Restricted Access.</p>
+    <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #6b7280;">
+      Logged in as: <strong><%= locals.currentUser ? locals.currentUser.email : 'Admin' %></strong> (Role: <%= locals.currentUser ? locals.currentUser.role : 'admin' %>)
+    </p>
+  </div>
+</footer>
+<!-- Shared & Dedicated Admin Frontend Scripts -->
+<script src="/js/main.js"></script>
+<script src="/js/admin-frontend.js"></script>
+</body>
+</html>

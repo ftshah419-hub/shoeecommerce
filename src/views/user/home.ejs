@@ -1,0 +1,53 @@
+<%- include('../partials/user-header') %>
+<%- include('../partials/navbar') %>
+
+<!-- Hero Banner -->
+<section class="hero">
+  <div class="container hero-content">
+    <span class="user-hero-badge">New Season Release 2026</span>
+    <h1 class="hero-title">ENGINEERED FOR THE STREETS & THE COURTS.</h1>
+    <p class="hero-subtitle">
+      Discover the latest drops in performance footwear, vintage retros, and limited edition streetwear sneakers.
+    </p>
+    <div style="display: flex; gap: 1rem;">
+      <a href="/products" class="btn btn-primary">Shop All Drops</a>
+      <a href="/products?category=Running" class="btn btn-secondary">Explore Running</a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Sneakers -->
+<main class="container section">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Featured Drops</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Curated collection of our most coveted silhouettes</p>
+    </div>
+    <a href="/products" style="color: var(--accent); font-weight: 600; font-size: 0.95rem;">View Full Catalog &rarr;</a>
+  </div>
+
+  <div class="product-grid">
+    <% if (featuredProducts && featuredProducts.length > 0) { %>
+      <% featuredProducts.forEach(product => { %>
+        <div class="product-card">
+          <div class="product-image-wrap">
+            <span class="product-badge"><%= product.category %></span>
+            <img src="<%= product.image %>" alt="<%= product.name %>" class="product-image" loading="lazy">
+          </div>
+          <div class="product-info">
+            <span class="product-brand"><%= product.brand %></span>
+            <h3 class="product-name"><%= product.name %></h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+              <span class="product-price">$<%= product.price.toFixed(2) %></span>
+              <a href="/products/<%= product.id %>" class="btn btn-secondary btn-sm">View Details</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No featured products available at the moment.</p>
+    <% } %>
+  </div>
+</main>
+
+<%- include('../partials/user-footer') %>

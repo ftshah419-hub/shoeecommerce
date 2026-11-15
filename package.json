@@ -1,0 +1,32 @@
+{
+  "name": "neleeri-sneakers",
+  "version": "1.0.0",
+  "description": "Neleeri Sneakers - E-Commerce Platform built with MVC + Service Layer Architecture",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "sneakers",
+    "mvc",
+    "service-layer",
+    "express",
+    "auth",
+    "admin"
+  ],
+  "author": "Neleeri Sneakers Team",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.0"
+  }
+}

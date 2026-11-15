@@ -1,0 +1,27 @@
+<header class="header">
+  <div class="container nav">
+    <a href="/" class="logo">
+      <span>👟 NELEERI</span> SNEAKERS
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li><a href="/products" class="nav-link">Catalog</a></li>
+
+      <% if (locals.currentUser) { %>
+        <% if (locals.currentUser.role === 'admin') { %>
+          <li>
+            <a href="/admin/dashboard" class="badge-admin">Admin Dashboard</a>
+          </li>
+        <% } %>
+        <li><a href="/cart" class="nav-link">Bag / Cart</a></li>
+        <li><a href="/profile" class="nav-link">Hi, <%= locals.currentUser.name.split(' ')[0] %></a></li>
+        <li><a href="/auth/logout" class="btn btn-secondary btn-sm">Log out</a></li>
+      <% } else { %>
+        <li><a href="/cart" class="nav-link">Bag / Cart</a></li>
+        <li><a href="/auth/login" class="nav-link">Log In</a></li>
+        <li><a href="/auth/register" class="btn btn-primary btn-sm">Sign Up</a></li>
+      <% } %>
+    </ul>
+  </div>
+</header>

@@ -1,0 +1,67 @@
+<%- include('../partials/user-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="section-title">Sneaker Catalog</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Browse all premium kicks available at Neleeri</p>
+    </div>
+
+    <!-- Live Search & Category Filter Bar -->
+    <form action="/products" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+      <input 
+        type="text" 
+        id="catalogLiveSearch"
+        name="search" 
+        class="form-control" 
+        style="width: 220px;" 
+        placeholder="Instant live search..." 
+        value="<%= searchQuery %>"
+      >
+      <select name="category" class="form-control" style="width: 140px;" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        <option value="Running" <%= currentCategory === 'Running' ? 'selected' : '' %>>Running</option>
+        <option value="Basketball" <%= currentCategory === 'Basketball' ? 'selected' : '' %>>Basketball</option>
+        <option value="Streetwear" <%= currentCategory === 'Streetwear' ? 'selected' : '' %>>Streetwear</option>
+        <option value="Casual" <%= currentCategory === 'Casual' ? 'selected' : '' %>>Casual</option>
+      </select>
+      <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+      <% if (searchQuery || currentCategory || currentBrand) { %>
+        <a href="/products" class="btn btn-secondary btn-sm" style="color: var(--text-muted);">Reset</a>
+      <% } %>
+    </form>
+  </div>
+
+  <div class="product-grid">
+    <% if (products && products.length > 0) { %>
+      <% products.forEach(product => { %>
+        <div class="product-card">
+          <div class="product-image-wrap">
+            <span class="product-badge"><%= product.category %></span>
+            <img src="<%= product.image %>" alt="<%= product.name %>" class="product-image" loading="lazy">
+          </div>
+          <div class="product-info">
+            <span class="product-brand"><%= product.brand %></span>
+            <h3 class="product-name"><%= product.name %></h3>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+              Sizes: <%= (product.sizes || []).join(', ') %>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+              <span class="product-price">$<%= product.price.toFixed(2) %></span>
+              <a href="/products/<%= product.id %>" class="btn btn-primary btn-sm">View</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+        <h3>No sneakers match your criteria.</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Try resetting your search or filter options.</p>
+        <a href="/products" class="btn btn-secondary" style="margin-top: 1rem;">View All Sneakers</a>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('../partials/user-footer') %>

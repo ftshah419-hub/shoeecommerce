@@ -1,0 +1,74 @@
+<%- include('../partials/user-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div style="margin-bottom: 2rem;">
+    <h1 class="section-title">My Account</h1>
+    <p style="color: var(--text-muted);">Manage your profile information and view your order history.</p>
+  </div>
+
+  <% if (typeof orderSuccess !== 'undefined' && orderSuccess) { %>
+    <div class="alert alert-success">
+      🎉 Thank you for your order! Your Order ID is <strong>#<%= orderSuccess %></strong>.
+    </div>
+  <% } %>
+
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+    <!-- Profile Info Card -->
+    <div style="background: var(--bg-card); padding: 1.75rem; border-radius: var(--radius); border: 1px solid var(--border);">
+      <h3 style="margin-bottom: 1rem;">Profile Overview</h3>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Name</span>
+          <p style="font-weight: 600;"><%= user.name %></p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Email</span>
+          <p style="font-weight: 600;"><%= user.email %></p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Account Role</span>
+          <p><span class="badge-admin" style="font-size: 0.75rem;"><%= user.role %></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders History -->
+    <div>
+      <h3 style="margin-bottom: 1rem;">Order History (<%= orders ? orders.length : 0 %>)</h3>
+      <% if (orders && orders.length > 0) { %>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <% orders.forEach(order => { %>
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <div>
+                  <strong style="color: var(--accent);">#<%= order.id %></strong>
+                  <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
+                    <%= new Date(order.createdAt).toLocaleDateString() %>
+                  </span>
+                </div>
+                <span style="padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #262b37; color: var(--accent);">
+                  <%= order.status %>
+                </span>
+              </div>
+              <ul style="list-style: none; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
+                <% order.items.forEach(item => { %>
+                  <li>&bull; <%= item.name %> (US <%= item.size %>) &times; <%= item.quantity %></li>
+                <% }) %>
+              </ul>
+              <div style="font-size: 0.95rem; font-weight: 700; text-align: right;">
+                Total: $<%= order.totalAmount.toFixed(2) %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div style="background: var(--bg-card); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; color: var(--text-muted);">
+          No orders found yet. <a href="/products" style="color: var(--accent); font-weight: 600;">Explore sneakers &rarr;</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/user-footer') %>

@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main class="container section" style="text-align: center; padding: 5rem 1rem;">
+  <div style="max-width: 500px; margin: 0 auto; background: var(--bg-card); padding: 3rem; border-radius: var(--radius); border: 1px solid var(--border);">
+    <span style="font-size: 3.5rem; font-weight: 900; color: var(--accent);"><%= typeof errorCode !== 'undefined' ? errorCode : 500 %></span>
+    <h2 style="margin: 1rem 0;"><%= typeof title !== 'undefined' ? title : 'An Error Occurred' %></h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">
+      <%= typeof errorMessage !== 'undefined' ? errorMessage : 'Something went wrong while processing your request.' %>
+    </p>
+    <a href="/" class="btn btn-primary">Back to Neleeri Home</a>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

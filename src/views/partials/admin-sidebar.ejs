@@ -1,0 +1,28 @@
+<aside class="admin-sidebar">
+  <div class="admin-nav-card">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 1px;">
+      Admin Navigation
+    </div>
+    <nav class="admin-menu">
+      <a href="/admin/dashboard" class="admin-nav-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+        <span>📊</span> Dashboard
+      </a>
+      <a href="/admin/products" class="admin-nav-item <%= typeof activePage !== 'undefined' && activePage === 'products' ? 'active' : '' %>">
+        <span>👟</span> Sneaker Inventory
+      </a>
+      <a href="/admin/orders" class="admin-nav-item <%= typeof activePage !== 'undefined' && activePage === 'orders' ? 'active' : '' %>">
+        <span>📦</span> Orders Oversight
+      </a>
+      <a href="/admin/users" class="admin-nav-item <%= typeof activePage !== 'undefined' && activePage === 'users' ? 'active' : '' %>">
+        <span>👥</span> Customer Accounts
+      </a>
+      <hr style="border: none; border-top: 1px solid var(--border); margin: 0.75rem 0;">
+      <a href="/" class="admin-nav-item" style="color: var(--accent);">
+        <span>🏪</span> Customer Storefront
+      </a>
+      <a href="/auth/logout" class="admin-nav-item" style="color: var(--danger);">
+        <span>🚪</span> Log Out
+      </a>
+    </nav>
+  </div>
+</aside>

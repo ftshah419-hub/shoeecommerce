@@ -1,0 +1,79 @@
+<%- include('../partials/admin-header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container section">
+  <div class="admin-header-bar">
+    <div class="admin-title-wrap">
+      <span class="badge-admin">Admin Control Panel</span>
+      <h1>User & Role Management</h1>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error"><%= error %></div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success"><%= success %></div>
+  <% } %>
+
+  <div class="admin-grid">
+    <%- include('../partials/admin-sidebar', { activePage: 'users' }) %>
+
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.25rem;">Registered Customers & Administrators (<%= users.length %>)</h3>
+        <input 
+          type="text" 
+          id="adminTableSearch" 
+          class="form-control" 
+          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
+          placeholder="Filter users by email, name..."
+        >
+      </div>
+
+      <div class="admin-table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Current Role</th>
+              <th>Change Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+              <tr>
+                <td><code style="font-size: 0.8rem;"><%= u.id %></code></td>
+                <td><strong><%= u.name %></strong></td>
+                <td><%= u.email %></td>
+                <td>
+                  <span class="badge-admin" style="<%= u.role === 'user' ? 'background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: var(--border);' : '' %>">
+                    <%= u.role %>
+                  </span>
+                </td>
+                <td>
+                  <% if (locals.currentUser && u.id === locals.currentUser.id) { %>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">(Current Session)</span>
+                  <% } else { %>
+                    <form class="role-change-form" action="/admin/users/<%= u.id %>/role" method="POST" style="display: flex; gap: 0.5rem;">
+                      <select name="role" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 100px;">
+                        <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
+                        <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                      </select>
+                      <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>
