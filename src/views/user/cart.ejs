@@ -1,95 +1,196 @@
-<%- include('../partials/user-header') %>
-<%- include('../partials/navbar') %>
+<%- include('partials/header', { title: 'Shopping Bag Terminal - Neleeri Sneakers' }) %>
 
-<main class="container section">
-  <h1 class="section-title" style="margin-bottom: 2rem;">Your Shopping Bag</h1>
-
-  <% if (typeof error !== 'undefined' && error) { %>
-    <div class="alert alert-error"><%= error %></div>
-  <% } %>
-
-  <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success"><%= success %></div>
-  <% } %>
-
-  <% if (cart && cart.length > 0) { %>
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2.5rem; align-items: start;">
-      <!-- Cart Items List -->
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <% cart.forEach(item => { %>
-          <div class="bag-item-card cart-item-row">
-            <img src="<%= item.image %>" alt="<%= item.name %>" class="bag-item-img">
-            <div style="flex-grow: 1;">
-              <h3 style="font-size: 1.05rem;"><%= item.name %></h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem;">Size: US <%= item.size %> | Qty: <%= item.quantity %></p>
-              <p style="color: var(--accent); font-weight: 700; margin-top: 0.25rem;">$<%= (item.price * item.quantity).toFixed(2) %></p>
-            </div>
-            <form action="/cart/remove" method="POST">
-              <input type="hidden" name="productId" value="<%= item.productId %>">
-              <input type="hidden" name="size" value="<%= item.size %>">
-              <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger);">Remove</button>
-            </form>
-          </div>
-        <% }) %>
+<main class="w-full pt-4 bg-background min-h-screen">
+  <div class="flex flex-col w-full">
+    <!-- Top Utility Context Bar -->
+    <section class="w-full bg-surface-container-lowest px-4 md:px-12 py-3 border-b border-surface-container-high">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 max-w-7xl mx-auto w-full text-xs font-label-tech">
+        <nav class="flex items-center gap-2 text-on-surface-variant uppercase tracking-wider">
+          <a class="hover:text-primary transition-colors" href="/">HOME</a>
+          <span class="text-outline-variant">/</span>
+          <span class="text-primary font-bold">SHOPPING BAG TERMINAL</span>
+        </nav>
+        <div class="flex items-center gap-3 text-tertiary">
+          <span class="inline-flex items-center gap-1.5 bg-surface-container px-2 py-0.5 text-on-surface">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary-container animate-pulse"></span>
+            ACTIVE SESSION: #BAG-8842-X
+          </span>
+          <span class="hidden md:inline tracking-widest text-[10px]">LOC: 28.6139°N / 77.2090°E</span>
+        </div>
       </div>
+    </section>
 
-      <!-- Checkout Summary Box -->
-      <div style="background: var(--bg-card); padding: 1.75rem; border-radius: var(--radius); border: 1px solid var(--border);">
-        <h3 style="margin-bottom: 1.25rem; font-size: 1.2rem;">Order Summary</h3>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-muted);">
-          <span>Subtotal</span>
-          <span>$<%= subtotal.toFixed(2) %></span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; color: var(--text-muted);">
-          <span>Estimated Shipping</span>
-          <span><%= shipping === 0 ? 'FREE' : '$' + shipping.toFixed(2) %></span>
-        </div>
-        <hr style="border: none; border-top: 1px solid var(--border); margin: 1rem 0;">
-        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">
-          <span>Total</span>
-          <span style="color: var(--accent);">$<%= total.toFixed(2) %></span>
-        </div>
-
-        <% if (locals.currentUser) { %>
-          <form action="/checkout" method="POST">
-            <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Shipping Details</h4>
-            <div class="form-group">
-              <label class="form-label">Street Address</label>
-              <input type="text" name="street" class="form-control" placeholder="123 Sneakerhead Blvd" required>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-              <div class="form-group">
-                <label class="form-label">City</label>
-                <input type="text" name="city" class="form-control" placeholder="New York" required>
+    <!-- Dynamic Shipping Milestone HUD Progress Bar -->
+    <section class="w-full px-4 md:px-12 py-5 bg-surface-container-low border-b border-outline-variant/30">
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="bg-surface-container p-4 md:p-5 relative overflow-hidden shadow-xl border border-outline-variant/30">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-primary-container text-on-primary flex items-center justify-center font-bold">
+                <span class="material-symbols-outlined text-[20px]">local_shipping</span>
               </div>
-              <div class="form-group">
-                <label class="form-label">Postal / Zip</label>
-                <input type="text" name="zipCode" class="form-control" placeholder="10001" required>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-headline-sm text-sm uppercase text-on-surface tracking-tight font-bold">
+                    EXPRESS LOGISTICS MILESTONE
+                  </span>
+                  <span class="bg-secondary text-on-secondary font-label-tech text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">
+                    <%= (subtotal >= 150 || cart.length === 0) ? 'SPEED COURIER UNLOCKED' : 'PRIORITY AIR' %>
+                  </span>
+                </div>
+                <p class="text-xs text-on-surface-variant">
+                  Orders over $150 automatically qualify for <strong class="text-secondary font-semibold">FREE NEXT-DAY DISPATCH</strong>.
+                </p>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-              Complete Purchase
-            </button>
-          </form>
-        <% } else { %>
-          <div style="text-align: center; padding: 1rem 0;">
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-              Please sign in to complete your checkout.
-            </p>
-            <a href="/auth/login?redirect=/cart" class="btn btn-primary" style="width: 100%;">
-              Log In to Checkout
+            <div class="text-left sm:text-right font-mono text-xs">
+              <span class="font-label-tech text-[10px] uppercase text-tertiary block">TIER THRESHOLD</span>
+              <span class="font-bold text-on-surface">$<%= subtotal %> / $150.00</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-surface-container-highest h-2 relative overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-primary-container via-primary to-secondary transition-all duration-700"
+                 style="width: <%= Math.min(100, Math.round((subtotal / 150) * 100)) %>%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alerts if any -->
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="max-w-7xl mx-auto w-full px-4 md:px-12 pt-4">
+        <div class="bg-primary-container/20 border border-primary text-primary px-4 py-3 flex items-center justify-between text-xs font-label-tech">
+          <span><%= success %></span>
+          <button onclick="this.parentElement.remove()" class="text-white font-bold">&times;</button>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="max-w-7xl mx-auto w-full px-4 md:px-12 pt-4">
+        <div class="bg-error-container/30 border border-error text-error px-4 py-3 flex items-center justify-between text-xs font-label-tech">
+          <span><%= error %></span>
+          <button onclick="this.parentElement.remove()" class="text-white font-bold">&times;</button>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Main Cart Content Grid -->
+    <section class="w-full px-4 md:px-12 py-8 max-w-7xl mx-auto">
+      <% if (cart && cart.length > 0) { %>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Left Column: Cart Items (8 cols) -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+              <span class="font-headline-sm text-base uppercase text-on-surface font-bold">
+                MANIFEST ITEMS (<%= cart.reduce((s, i) => s + i.quantity, 0) %> UNITS)
+              </span>
+              <span class="font-label-tech text-xs text-tertiary">READY FOR DISPATCH</span>
+            </div>
+
+            <div class="space-y-4">
+              <% cart.forEach(item => { %>
+                <div class="bg-surface-container-low p-4 sm:p-5 border border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                  <!-- Thumbnail & Specs -->
+                  <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <div class="w-20 h-20 bg-surface-container flex items-center justify-center p-2 border border-outline-variant/20 flex-shrink-0">
+                      <img src="<%= item.image %>" alt="<%= item.name %>" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                      <span class="font-label-tech text-[10px] text-secondary uppercase tracking-widest block">EDITION DROP</span>
+                      <h4 class="font-headline-sm text-base uppercase text-on-surface font-bold"><%= item.name %></h4>
+                      <p class="text-xs text-on-surface-variant font-mono">
+                        Size: UK <%= item.size %> &bull; Price: $<%= Number(item.price).toFixed(2) %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Price & Remove -->
+                  <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-outline-variant/20">
+                    <div class="text-right">
+                      <span class="font-headline-md text-lg text-on-surface font-bold font-mono">
+                        $<%= (item.price * item.quantity).toFixed(2) %>
+                      </span>
+                      <span class="text-[10px] font-label-tech text-tertiary block">Qty: <%= item.quantity %></span>
+                    </div>
+
+                    <form action="/cart/remove" method="POST" class="inline">
+                      <input type="hidden" name="productId" value="<%= item.productId %>">
+                      <input type="hidden" name="size" value="<%= item.size %>">
+                      <button type="submit" class="text-error hover:text-error-container p-2" title="Remove sneaker">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+
+            <div class="pt-4 flex items-center justify-between text-xs font-label-caps uppercase">
+              <a href="/products" class="text-primary hover:underline flex items-center gap-1 font-bold">
+                <span class="material-symbols-outlined text-[16px]">west</span>
+                <span>Continue Shopping</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right Column: Tactical Order Terminal (4 cols) -->
+          <div class="lg:col-span-4 bg-surface-container-low p-6 lg:p-8 border border-outline-variant/30 space-y-6 shadow-xl">
+            <div class="border-b border-outline-variant/20 pb-4">
+              <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[TERMINAL // SUMMARY]</span>
+              <h3 class="font-headline-sm text-lg uppercase text-on-surface font-bold">Tactical Order Terminal</h3>
+            </div>
+
+            <div class="space-y-3 font-label-tech text-xs">
+              <div class="flex justify-between text-on-surface-variant">
+                <span>Subtotal Base</span>
+                <span class="text-on-surface font-mono font-bold">$<%= subtotal.toFixed(2) %></span>
+              </div>
+              <div class="flex justify-between text-on-surface-variant">
+                <span>Air Express Logistics</span>
+                <span class="text-on-surface font-mono font-bold">
+                  <%= shipping === 0 ? 'FREE (UNLOCKED)' : '$' + shipping.toFixed(2) %>
+                </span>
+              </div>
+              <div class="border-t border-outline-variant/20 pt-3 flex justify-between text-base font-bold">
+                <span class="text-on-surface font-headline-sm uppercase">Total Valuation</span>
+                <span class="text-primary font-mono text-xl font-bold">$<%= total.toFixed(2) %></span>
+              </div>
+            </div>
+
+            <!-- Checkout CTA -->
+            <a href="/checkout" 
+               class="w-full bg-primary-container text-on-primary py-4 px-6 font-label-caps text-xs uppercase font-bold hover:bg-inverse-primary transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(21,54,200,0.5)]">
+              <span>Proceed To Checkout</span>
+              <span class="material-symbols-outlined text-[18px]">lock</span>
             </a>
+
+            <!-- Security Trust Badges -->
+            <div class="bg-surface-container p-3 border border-outline-variant/20 space-y-1 text-[10px] font-label-tech text-tertiary">
+              <div class="flex items-center gap-1.5 text-on-surface">
+                <span class="material-symbols-outlined text-[14px] text-primary">verified_user</span>
+                <span class="font-bold">256-BIT ENCRYPTED CHECKOUT</span>
+              </div>
+              <p>Authenticated order dispatch verified through Neleeri central logistics network.</p>
+            </div>
           </div>
-        <% } %>
-      </div>
-    </div>
-  <% } else { %>
-    <div style="text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);">
-      <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem;">Your bag is currently empty</h3>
-      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Check out the latest sneakers in our catalog.</p>
-      <a href="/products" class="btn btn-primary">Start Shopping</a>
-    </div>
-  <% } %>
+
+        </div>
+      <% } else { %>
+        <div class="bg-surface-container-low p-16 text-center border border-outline-variant/30 space-y-4 max-w-xl mx-auto">
+          <span class="material-symbols-outlined text-6xl text-tertiary">shopping_bag</span>
+          <h2 class="font-headline-md text-2xl uppercase text-on-surface font-bold">Your Bag Is Empty</h2>
+          <p class="text-xs text-on-surface-variant">Your tactical dispatch manifest contains no active sneaker models. Explore our latest sneaker drops to fill your locker.</p>
+          <a href="/products" class="inline-block bg-primary-container text-on-primary px-8 py-3 font-label-caps text-xs uppercase font-bold shadow-lg">
+            Discover Sneaker Archive
+          </a>
+        </div>
+      <% } %>
+    </section>
+  </div>
 </main>
 
-<%- include('../partials/user-footer') %>
+<%- include('partials/footer') %>

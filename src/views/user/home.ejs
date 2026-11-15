@@ -1,53 +1,195 @@
-<%- include('../partials/user-header') %>
-<%- include('../partials/navbar') %>
+<%- include('partials/header', { title: 'Neleeri Sneakers - Move Different // High Voltage Streetwear' }) %>
 
-<!-- Hero Banner -->
-<section class="hero">
-  <div class="container hero-content">
-    <span class="user-hero-badge">New Season Release 2026</span>
-    <h1 class="hero-title">ENGINEERED FOR THE STREETS & THE COURTS.</h1>
-    <p class="hero-subtitle">
-      Discover the latest drops in performance footwear, vintage retros, and limited edition streetwear sneakers.
-    </p>
-    <div style="display: flex; gap: 1rem;">
-      <a href="/products" class="btn btn-primary">Shop All Drops</a>
-      <a href="/products?category=Running" class="btn btn-secondary">Explore Running</a>
-    </div>
-  </div>
-</section>
+<main class="w-full pt-4 bg-background min-h-screen">
+  <div class="flex flex-col w-full">
+    <!-- HERO SECTION -->
+    <section class="relative w-full min-h-[850px] flex items-center justify-center overflow-hidden bg-background px-4 md:px-12 py-12">
+      <!-- Atmospheric Ambient Glows -->
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary-container/15 rounded-full blur-[140px] pointer-events-none"></div>
+      <div class="absolute bottom-10 right-10 w-[420px] h-[420px] bg-secondary-container/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-<!-- Featured Sneakers -->
-<main class="container section">
-  <div class="section-header">
-    <div>
-      <h2 class="section-title">Featured Drops</h2>
-      <p style="color: var(--text-muted); font-size: 0.95rem;">Curated collection of our most coveted silhouettes</p>
-    </div>
-    <a href="/products" style="color: var(--accent); font-weight: 600; font-size: 0.95rem;">View Full Catalog &rarr;</a>
-  </div>
-
-  <div class="product-grid">
-    <% if (featuredProducts && featuredProducts.length > 0) { %>
-      <% featuredProducts.forEach(product => { %>
-        <div class="product-card">
-          <div class="product-image-wrap">
-            <span class="product-badge"><%= product.category %></span>
-            <img src="<%= product.image %>" alt="<%= product.name %>" class="product-image" loading="lazy">
+      <div class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+        <!-- Left Column: Copy, Specs, CTAs -->
+        <div class="lg:col-span-6 flex flex-col gap-6 select-none">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 bg-surface-container-high px-3 py-1.5 border border-outline-variant/40 w-fit">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span class="font-label-tech text-xs text-primary-fixed uppercase tracking-widest font-bold">
+              NELEERI / FIRST MOVEMENT [BATCH_01]
+            </span>
           </div>
-          <div class="product-info">
-            <span class="product-brand"><%= product.brand %></span>
-            <h3 class="product-name"><%= product.name %></h3>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-              <span class="product-price">$<%= product.price.toFixed(2) %></span>
-              <a href="/products/<%= product.id %>" class="btn btn-secondary btn-sm">View Details</a>
+
+          <!-- Headline -->
+          <div class="flex flex-col">
+            <h1 class="font-display-promo text-5xl sm:text-7xl lg:text-8xl text-on-surface uppercase tracking-tight leading-none drop-shadow-2xl font-bold">
+              MOVE<br/>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">
+                DIFFERENT.
+              </span>
+            </h1>
+            <p class="font-headline-md text-xl sm:text-2xl text-secondary tracking-widest uppercase mt-2 font-bold">
+              NOT BUILT TO FOLLOW.
+            </p>
+          </div>
+
+          <!-- Description -->
+          <p class="text-base sm:text-lg text-on-surface-variant max-w-lg leading-relaxed">
+            Engineered for raw kinetic propulsion. Designed for relentless city streets. Discover the hyper-precision footwear engineered so every stride asserts total territory.
+          </p>
+
+          <!-- CTAs -->
+          <div class="flex flex-wrap items-center gap-4 pt-2">
+            <a href="/products" 
+               class="group relative inline-flex items-center justify-center gap-2 bg-primary-container px-8 py-4 text-on-primary font-label-caps text-xs uppercase transition-all duration-200 hover:bg-on-primary-fixed-variant shadow-[0_0_24px_rgba(21,54,200,0.5)] font-bold">
+              <span>SHOP NOW</span>
+              <span class="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:translate-x-1.5">east</span>
+            </a>
+            <a href="#collections" 
+               class="inline-flex items-center justify-center gap-2 bg-surface-container-high border border-outline-variant/60 px-6 py-4 text-on-surface font-label-caps text-xs uppercase transition-all duration-200 hover:bg-on-surface hover:text-surface-container-lowest font-bold">
+              <span>EXPLORE ARCHIVE</span>
+              <span class="material-symbols-outlined text-[18px]">view_in_ar</span>
+            </a>
+          </div>
+
+          <!-- Metric Specs Bar -->
+          <div class="grid grid-cols-3 gap-4 pt-6 border-t border-outline-variant/30 max-w-md">
+            <div class="flex flex-col">
+              <span class="font-display-promo text-2xl leading-tight text-on-surface">350<span class="text-sm font-label-tech text-secondary">G</span></span>
+              <span class="font-label-tech text-[10px] text-outline tracking-wider uppercase">ULTRA-LIGHTWEIGHT</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-display-promo text-2xl leading-tight text-primary">22.4<span class="text-sm font-label-tech text-primary">%</span></span>
+              <span class="font-label-tech text-[10px] text-outline tracking-wider uppercase">ENERGY RETURN</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-display-promo text-2xl leading-tight text-secondary">100<span class="text-sm font-label-tech text-secondary">%</span></span>
+              <span class="font-label-tech text-[10px] text-outline tracking-wider uppercase">STREET GRADE</span>
             </div>
           </div>
         </div>
-      <% }) %>
-    <% } else { %>
-      <p>No featured products available at the moment.</p>
-    <% } %>
+
+        <!-- Right Column: Interactive 3D Sneaker Visual -->
+        <div class="lg:col-span-6 relative flex items-center justify-center">
+          <div class="relative w-full aspect-square max-w-[540px] flex items-center justify-center">
+            <!-- Circular Grid Graphic -->
+            <div class="absolute inset-0 rounded-full border border-primary/20 border-dashed animate-[spin_60s_linear_infinite]"></div>
+            <div class="absolute inset-8 rounded-full border border-outline-variant/20"></div>
+
+            <!-- Sneaker Floating Image -->
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=85" 
+                 alt="Neleeri Air Velocity 90" 
+                 class="w-[90%] h-auto object-contain filter drop-shadow-[0_30px_35px_rgba(0,0,0,0.9)] transform -rotate-12 hover:rotate-0 hover:scale-105 transition-all duration-700 select-none z-10" />
+
+            <!-- Floating Hotspot Badges -->
+            <div class="absolute top-12 right-4 bg-surface-container/90 backdrop-blur-md px-3 py-1.5 border border-primary/40 text-xs font-label-tech text-primary shadow-xl">
+              [TECH // DUAL FOAM CHASSIS]
+            </div>
+            <div class="absolute bottom-16 left-2 bg-surface-container/90 backdrop-blur-md px-3 py-1.5 border border-secondary/40 text-xs font-label-tech text-secondary shadow-xl">
+              [EDITION // NL-V90 COBALT]
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE MARQUEE TICKER STRIP -->
+    <div class="w-full bg-primary-container py-3 overflow-hidden border-y border-primary-fixed/20 select-none">
+      <div class="flex items-center gap-8 whitespace-nowrap font-label-caps text-xs uppercase tracking-widest text-on-primary font-bold animate-[marquee_25s_linear_infinite]">
+        <span>⚡ NELEERI SNEAKERS &bull; HIGH VOLTAGE STREET CULTURE</span>
+        <span>⚡ KINETIC PROPULSION FOAM &bull; 100% TERRAIN TESTED</span>
+        <span>⚡ BATCH 01 SQUAD REGISTRATION ACTIVE</span>
+        <span>⚡ WORLDWIDE AIR DISPATCH &bull; FREE PRIORITY SHIPPING OVER $150</span>
+        <span>⚡ NELEERI SNEAKERS &bull; HIGH VOLTAGE STREET CULTURE</span>
+      </div>
+    </div>
+
+    <!-- FEATURED CATALOG SHOWCASE SECTION -->
+    <section id="collections" class="w-full px-4 md:px-12 py-16 max-w-7xl mx-auto space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-outline-variant/30 pb-4">
+        <div>
+          <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[SERIES_04 // ARCHIVE DROPS]</span>
+          <h2 class="font-headline-lg text-3xl uppercase text-on-surface tracking-tight font-bold">Featured Sneaker Drops</h2>
+        </div>
+        <a href="/products" class="font-label-caps text-xs uppercase text-primary hover:text-primary-fixed-dim flex items-center gap-1 transition-colors font-bold">
+          <span>View Complete Catalog (<%= featuredProducts ? featuredProducts.length : 0 %>+)</span>
+          <span class="material-symbols-outlined text-[16px]">east</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% (featuredProducts || []).forEach(sneaker => { %>
+          <div class="bg-surface-container-low border border-outline-variant/30 hover:border-primary/60 transition-all duration-300 group flex flex-col justify-between overflow-hidden shadow-lg">
+            <div class="relative aspect-[4/3] bg-surface-container overflow-hidden p-6 flex items-center justify-center">
+              <span class="absolute top-3 left-3 font-label-tech text-[10px] bg-surface-container-lowest/90 px-2 py-0.5 text-primary border border-primary/20 uppercase font-mono">
+                <%= sneaker.brand || 'Neleeri Lab' %>
+              </span>
+              <img src="<%= sneaker.image %>" 
+                   alt="<%= sneaker.name %>" 
+                   class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 drop-shadow-xl" />
+            </div>
+
+            <div class="p-5 flex flex-col gap-3">
+              <div>
+                <span class="font-label-tech text-[10px] text-tertiary uppercase"><%= sneaker.category %> EDITION</span>
+                <h3 class="font-headline-sm text-lg uppercase text-on-surface font-bold group-hover:text-primary transition-colors">
+                  <%= sneaker.name %>
+                </h3>
+              </div>
+
+              <p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                <%= sneaker.description %>
+              </p>
+
+              <div class="pt-2 flex items-center justify-between border-t border-outline-variant/20">
+                <span class="font-headline-md text-xl text-on-surface font-bold font-mono">
+                  $<%= Number(sneaker.price).toFixed(2) %>
+                </span>
+                <a href="/products/<%= sneaker.id %>" 
+                   class="bg-surface-container hover:bg-primary-container hover:text-on-primary text-on-surface px-4 py-2 font-label-caps text-xs uppercase transition-colors flex items-center gap-1 font-bold">
+                  <span>Inspect Spec</span>
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- TECHNICAL INNOVATION HUD -->
+    <section class="w-full bg-surface-container-lowest py-16 px-4 md:px-12 border-y border-outline-variant/30">
+      <div class="max-w-7xl mx-auto space-y-12">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+          <span class="font-label-tech text-xs uppercase text-secondary tracking-widest">[R&amp;D // LAB SPECIFICATION]</span>
+          <h2 class="font-headline-lg text-3xl uppercase text-on-surface font-bold">Engineered For Relentless Force</h2>
+          <p class="text-xs text-on-surface-variant">Triple-layer ergonomic construction built to withstand asphalt shear and high kinetic loads.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-surface-container p-6 border border-outline-variant/30 space-y-3">
+            <span class="material-symbols-outlined text-primary text-3xl">offline_bolt</span>
+            <h3 class="font-headline-sm text-base uppercase text-on-surface font-bold">Dual-Density Kinetic Foam</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">Sub-millimeter microcellular foam core providing 22.4% measured energy return on every rebound.</p>
+          </div>
+
+          <div class="bg-surface-container p-6 border border-outline-variant/30 space-y-3">
+            <span class="material-symbols-outlined text-secondary text-3xl">shield</span>
+            <h3 class="font-headline-sm text-base uppercase text-on-surface font-bold">Carbon-Fiber Chassis Shank</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">Torsional rigid bridge preventing arch fatigue across continuous high-impact street navigation.</p>
+          </div>
+
+          <div class="bg-surface-container p-6 border border-outline-variant/30 space-y-3">
+            <span class="material-symbols-outlined text-primary-fixed text-3xl">architecture</span>
+            <h3 class="font-headline-sm text-base uppercase text-on-surface font-bold">Ballistic Tactical Upper</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">Kevlar-reinforced engineered ripstop woven to resist abrasion and repel metropolitan moisture.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </main>
 
-<%- include('../partials/user-footer') %>
+<%- include('partials/footer') %>

@@ -3,18 +3,11 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { requireAuth } = require('../middlewares/authMiddleware');
 
-/**
- * Route protection wrapper:
- * 1. Checks if req.user is set by authMiddleware (teammate's auth branch).
- * 2. In standalone hackathon testing / development, if no token is yet issued,
- *    gracefully attaches the seeded demo user so User screens can be viewed & tested.
- */
 const resolveAuthOrDemo = (req, res, next) => {
   if (req.user) {
     return next();
   }
 
-  // If in development mode or explicitly testing demo user
   const isDev = process.env.NODE_ENV !== 'production';
   if (isDev) {
     req.user = {
@@ -30,13 +23,11 @@ const resolveAuthOrDemo = (req, res, next) => {
     return next();
   }
 
-  // In strict production, delegate to requireAuth
   return requireAuth(req, res, next);
 };
 
 // ==========================================
 // USER DASHBOARD & ACCOUNT ROUTES (PROTECTED)
-// Supports both mount paths: app.use('/user', userRoutes) and router.use('/', userRoutes)
 // ==========================================
 
 // Dashboard
@@ -63,19 +54,31 @@ router.post('/user/addresses/:id/delete', resolveAuthOrDemo, userController.dele
 router.post('/addresses/:id/default', resolveAuthOrDemo, userController.setDefaultAddress);
 router.post('/user/addresses/:id/default', resolveAuthOrDemo, userController.setDefaultAddress);
 
+// Password Recovery & OTP Verification Protocol
+router.get('/password-recovery', userController.renderPasswordRecovery);
+router.get('/user/password-recovery', userController.renderPasswordRecovery);
+router.post('/password-recovery', userController.processPasswordRecovery);
+router.post('/user/password-recovery', userController.processPasswordRecovery);
+
 // ==========================================
 // STOREFRONT PUBLIC ROUTES & CART
 // ==========================================
+
 router.get('/', userController.renderHome);
 router.get('/products', userController.renderProducts);
 router.get('/products/:id', userController.renderProductDetail);
 
-// Cart routes
+// Shopping Bag
 router.get('/cart', userController.renderCart);
 router.post('/cart/add', userController.addToCart);
 router.post('/cart/remove', userController.removeFromCart);
 
-// Protected customer actions
+// Checkout Terminal
+router.get('/checkout', resolveAuthOrDemo, userController.renderCheckout);
 router.post('/checkout', resolveAuthOrDemo, userController.checkout);
+
+// Order Confirmation & Live Tracking
+router.get('/order-confirmed', resolveAuthOrDemo, userController.renderOrderTracking);
+router.get('/orders/:id/track', resolveAuthOrDemo, userController.renderOrderTracking);
 
 module.exports = router;
