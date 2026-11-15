@@ -1,0 +1,155 @@
+<header 
+  id="adminTopbar" 
+  class="fixed top-0 left-64 right-0 h-16 bg-white/95 backdrop-blur-md z-40 border-b border-slate-200/90 shadow-xs flex items-center justify-between px-6 transition-all duration-300"
+>
+  <!-- Left: Sidebar Toggle & Breadcrumb Navigation -->
+  <div class="flex items-center gap-4">
+    <!-- Collapse / Expand Sidebar Toggle -->
+    <button 
+      id="sidebarToggleBtn"
+      type="button" 
+      onclick="toggleAdminSidebar()" 
+      class="w-9 h-9 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors"
+      title="Toggle Sidebar"
+    >
+      <span class="material-symbols-outlined text-[20px]">menu_open</span>
+    </button>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
+      <a href="/admin/dashboard" class="hover:text-blue-600 transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[15px]">home</span>
+        <span>Admin</span>
+      </a>
+      <span class="text-slate-300">/</span>
+      <span class="text-slate-400 capitalize">
+        <%= typeof activeSection !== 'undefined' ? activeSection : 'Workspace' %>
+      </span>
+      <span class="text-slate-300">/</span>
+      <span class="text-slate-900 font-semibold capitalize">
+        <%= typeof activePage !== 'undefined' ? activePage.replace('-', ' ') : 'Overview' %>
+      </span>
+    </nav>
+  </div>
+
+  <!-- Center: Global Search Bar [Ctrl + K] -->
+  <div class="flex-1 max-w-md mx-4 hidden md:block">
+    <div class="relative flex items-center">
+      <span class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[18px]">search</span>
+      <input 
+        id="globalAdminSearch"
+        type="text" 
+        placeholder="Search orders, sneakers, customers... [Ctrl + K]"
+        class="w-full bg-slate-50 hover:bg-slate-100/80 focus:bg-white pl-10 pr-12 py-2 text-sm text-slate-800 placeholder:text-slate-400 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+        onkeydown="if(event.key === 'Enter') { window.location.href='/admin/orders?search=' + encodeURIComponent(this.value); }"
+      />
+      <div class="absolute right-3 flex items-center gap-1 pointer-events-none">
+        <kbd class="px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded text-[10px] font-mono font-semibold">Ctrl</kbd>
+        <kbd class="px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded text-[10px] font-mono font-semibold">K</kbd>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Actions, Notifications & Profile Dropdown -->
+  <div class="flex items-center gap-3">
+    <!-- Quick Add Product CTA -->
+    <a 
+      href="/admin/products?openModal=true"
+      class="hidden lg:flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+    >
+      <span class="material-symbols-outlined text-[16px]">add</span>
+      <span>Add Sneaker</span>
+    </a>
+
+    <!-- Notification Icon with Dropdown -->
+    <div class="relative">
+      <button 
+        type="button" 
+        onclick="toggleNotificationMenu()"
+        class="relative w-9 h-9 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors"
+        title="Notifications & Alerts"
+      >
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-orange-500 ring-2 ring-white"></span>
+      </button>
+
+      <!-- Notification Dropdown Panel -->
+      <div 
+        id="notificationDropdown" 
+        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-elevated border border-slate-200 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+      >
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-2 px-1">
+          <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Alerts &amp; Activity</span>
+          <a href="/admin/messages" class="text-[11px] text-blue-600 hover:underline font-semibold">View Messages</a>
+        </div>
+        <div class="space-y-2 text-xs">
+          <a href="/admin/orders" class="block p-2 rounded-xl hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-2 text-slate-800 font-medium">
+              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+              <span>Pending Orders Queue</span>
+            </div>
+            <p class="text-slate-500 text-[11px] mt-0.5 pl-4">Orders awaiting air freight dispatch</p>
+          </a>
+          <a href="/admin/inventory" class="block p-2 rounded-xl hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-2 text-slate-800 font-medium">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>Low Stock Warning</span>
+            </div>
+            <p class="text-slate-500 text-[11px] mt-0.5 pl-4">Cobalt Runner &amp; Nomad variants low</p>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Profile Dropdown -->
+    <div class="relative">
+      <button 
+        type="button" 
+        onclick="toggleProfileMenu()"
+        class="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+      >
+        <div class="w-7 h-7 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
+          <%= typeof currentUser !== 'undefined' && currentUser && currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'A' %>
+        </div>
+        <div class="hidden sm:flex flex-col text-left">
+          <span class="text-xs font-semibold text-slate-800 leading-tight">
+            <%= typeof currentUser !== 'undefined' && currentUser && currentUser.name ? currentUser.name : 'Admin' %>
+          </span>
+          <span class="text-[10px] text-slate-400 capitalize">
+            <%= typeof currentUser !== 'undefined' && currentUser && currentUser.role ? currentUser.role : 'Super Admin' %>
+          </span>
+        </div>
+        <span class="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
+      </button>
+
+      <!-- Profile Dropdown Menu -->
+      <div 
+        id="profileDropdown" 
+        class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-elevated border border-slate-200 p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+      >
+        <div class="px-3 py-2 border-b border-slate-100 mb-1">
+          <p class="text-xs font-semibold text-slate-900"><%= typeof currentUser !== 'undefined' && currentUser && currentUser.name ? currentUser.name : 'Administrator' %></p>
+          <p class="text-[11px] text-slate-500 truncate"><%= typeof currentUser !== 'undefined' && currentUser && currentUser.email ? currentUser.email : 'admin@neleerisneakers.com' %></p>
+        </div>
+        <a href="/admin/settings" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-slate-400">person</span>
+          <span>Admin Profile</span>
+        </a>
+        <a href="/admin/activity-logs" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-slate-400">history</span>
+          <span>My Activity</span>
+        </a>
+        <a href="/" target="_blank" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-slate-400">storefront</span>
+          <span>Customer Storefront</span>
+        </a>
+        <div class="h-px bg-slate-100 my-1"></div>
+        <a href="/auth/logout" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-red-500">logout</span>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</header>

@@ -1,4 +1,4 @@
-const { db } = require('../config/db');
+const { db, saveDatabase } = require('../config/db');
 
 class User {
   /**
@@ -36,6 +36,8 @@ class User {
       termsAgreed: user.termsAgreed !== undefined ? Boolean(user.termsAgreed) : true,
       status: user.status || user.account_status || 'active',
       account_status: user.account_status || user.status || 'ACTIVE',
+      squad_tier: user.squad_tier || 'Initiate',
+      squad_uid: user.squad_uid || `SQ-NL-${Math.floor(1000 + Math.random() * 9000)}`,
       email_verified: user.email_verified !== undefined ? user.email_verified : (user.emailVerified !== undefined ? user.emailVerified : true),
       emailVerified: user.emailVerified !== undefined ? user.emailVerified : (user.email_verified !== undefined ? user.email_verified : true),
       phone_verified: user.phone_verified !== undefined ? user.phone_verified : (user.phoneVerified !== undefined ? user.phoneVerified : true),
@@ -50,10 +52,32 @@ class User {
   }
 
   /**
-   * Return all users without sensitive passwords
+   * Return filtered users without sensitive passwords
    */
-  static async find() {
-    return (db.users || []).map((u) => {
+  static async find(filter = {}) {
+    let users = [...(db.users || [])];
+
+    if (filter.role) {
+      users = users.filter((u) => u.role === filter.role);
+    }
+
+    if (filter.account_status) {
+      users = users.filter((u) => (u.account_status === filter.account_status || u.status === filter.account_status));
+    }
+
+    if (filter.search) {
+      const q = filter.search.toLowerCase();
+      users = users.filter(
+        (u) =>
+          (u.name && u.name.toLowerCase().includes(q)) ||
+          (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q)) ||
+          (u.phone && u.phone.toLowerCase().includes(q)) ||
+          (u.squad_uid && u.squad_uid.toLowerCase().includes(q))
+      );
+    }
+
+    return users.map((u) => {
       const normalized = this.normalize(u);
       const { password_hash, password, ...rest } = normalized;
       return rest;
@@ -63,20 +87,28 @@ class User {
   /**
    * Find a user by primary key ID
    */
-  static async findById(id) {
+  static async findById(id, includePassword = false) {
     if (!id) return null;
     const user = (db.users || []).find((u) => String(u.id) === String(id));
-    return user ? this.normalize(user) : null;
+    if (!user) return null;
+    const normalized = this.normalize(user);
+    if (includePassword) return normalized;
+    const { password, password_hash, ...safeUser } = normalized;
+    return safeUser;
   }
 
   /**
    * Find a user by email address (case-insensitive)
    */
-  static async findByEmail(email) {
+  static async findByEmail(email, includePassword = true) {
     if (!email) return null;
     const cleanEmail = email.trim().toLowerCase();
     const user = (db.users || []).find((u) => u.email && u.email.toLowerCase() === cleanEmail);
-    return user ? this.normalize(user) : null;
+    if (!user) return null;
+    const normalized = this.normalize(user);
+    if (includePassword) return normalized;
+    const { password, password_hash, ...safeUser } = normalized;
+    return safeUser;
   }
 
   /**
@@ -131,6 +163,8 @@ class User {
       termsAgreed: userData.termsAgreed !== undefined ? Boolean(userData.termsAgreed) : true,
       status: userData.status || userData.account_status || 'active',
       account_status: userData.account_status || userData.status || 'ACTIVE',
+      squad_tier: userData.squad_tier || 'Lvl 1 Initiate',
+      squad_uid: userData.squad_uid || `SQ-NL-${Math.floor(1000 + Math.random() * 9000)}`,
       emailVerified: userData.emailVerified !== undefined ? Boolean(userData.emailVerified) : (userData.email_verified !== undefined ? Boolean(userData.email_verified) : false),
       email_verified: userData.email_verified !== undefined ? Boolean(userData.email_verified) : (userData.emailVerified !== undefined ? Boolean(userData.emailVerified) : false),
       phoneVerified: userData.phoneVerified !== undefined ? Boolean(userData.phoneVerified) : (userData.phone_verified !== undefined ? Boolean(userData.phone_verified) : false),
@@ -140,10 +174,12 @@ class User {
       updatedAt: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       deleted_at: null,
+      ...userData,
     };
 
     if (!db.users) db.users = [];
     db.users.push(newUser);
+    if (typeof saveDatabase === 'function') saveDatabase();
     return this.normalize(newUser);
   }
 
@@ -172,6 +208,7 @@ class User {
       updated_at: new Date().toISOString(),
     };
 
+    if (typeof saveDatabase === 'function') saveDatabase();
     return this.normalize(db.users[index]);
   }
 
@@ -183,7 +220,13 @@ class User {
     const index = db.users.findIndex((u) => String(u.id) === String(id));
     if (index === -1) return false;
     db.users.splice(index, 1);
+    if (typeof saveDatabase === 'function') saveDatabase();
     return true;
+  }
+
+  static async count(filter = {}) {
+    const results = await this.find(filter);
+    return results.length;
   }
 }
 

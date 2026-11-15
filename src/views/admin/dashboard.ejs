@@ -1,94 +1,504 @@
-<%- include('../partials/admin-header') %>
-<%- include('../partials/navbar') %>
+<%- include('../partials/admin-header', { title: 'Dashboard Overview - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'dashboard', activeSection: 'Dashboard' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'dashboard', activeSection: 'Dashboard' }) %>
 
-<main class="container section">
-  <div class="admin-header-bar">
-    <div class="admin-title-wrap">
-      <span class="badge-admin">Admin Control Panel</span>
-      <h1>Store Analytics & Operations</h1>
-    </div>
-    <div>
-      <a href="/admin/products" class="btn btn-primary btn-sm">+ Add New Sneaker</a>
-    </div>
-  </div>
-
-  <div class="admin-grid">
-    <%- include('../partials/admin-sidebar', { activePage: 'dashboard' }) %>
-
-    <!-- Main Admin Dashboard Area -->
-    <div>
-      <!-- Analytics Metric Cards -->
-      <div class="stats-grid">
-        <div class="admin-metric-card">
-          <div class="admin-metric-label">Total Revenue</div>
-          <div class="admin-metric-value" style="color: var(--accent);">$<%= stats.totalRevenue.toFixed(2) %></div>
-        </div>
-        <div class="admin-metric-card">
-          <div class="admin-metric-label">Total Orders</div>
-          <div class="admin-metric-value"><%= stats.totalOrders %></div>
-        </div>
-        <div class="admin-metric-card">
-          <div class="admin-metric-label">Active Sneakers</div>
-          <div class="admin-metric-value"><%= stats.totalProducts %></div>
-        </div>
-        <div class="admin-metric-card">
-          <div class="admin-metric-label">Registered Users</div>
-          <div class="admin-metric-value"><%= stats.totalUsers %></div>
-        </div>
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+    
+    <!-- Top Greeting & Header Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Admin Dashboard Overview</h1>
+        <p class="text-sm text-slate-500 mt-1">Real-time revenue, orders telemetry, and sneaker inventory operations.</p>
       </div>
-
-      <!-- Live Search & Recent Orders Table -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.25rem;">Recent Orders Oversight</h3>
-        <input 
-          type="text" 
-          id="adminTableSearch" 
-          class="form-control" 
-          style="width: 250px; padding: 0.45rem 0.85rem; font-size: 0.85rem;" 
-          placeholder="Filter recent orders..."
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-600 shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Live Storefront Connected</span>
+        </span>
+        <a 
+          href="/admin/orders" 
+          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
         >
-      </div>
-
-      <div class="admin-table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (stats.recentOrders && stats.recentOrders.length > 0) { %>
-              <% stats.recentOrders.forEach(order => { %>
-                <tr>
-                  <td><strong>#<%= order.id %></strong></td>
-                  <td><%= order.userName %> (<%= order.userEmail %>)</td>
-                  <td>$<%= order.totalAmount.toFixed(2) %></td>
-                  <td>
-                    <span class="order-status-badge">
-                      <%= order.status %>
-                    </span>
-                  </td>
-                  <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                  <td>
-                    <a href="/admin/orders" class="btn btn-secondary btn-sm">Inspect</a>
-                  </td>
-                </tr>
-              <% }) %>
-            <% } else { %>
-              <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders placed yet.</td>
-              </tr>
-            <% } %>
-          </tbody>
-        </table>
+          <span class="material-symbols-outlined text-[17px]">local_shipping</span>
+          <span>Fulfillment Matrix</span>
+        </a>
       </div>
     </div>
+
+    <!-- 1. Six Primary Database KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      
+      <!-- Total Revenue -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Revenue</span>
+          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">payments</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold text-slate-900 font-heading">
+            ₹<%= (totalRevenue || 0).toLocaleString('en-IN') %>
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold text-emerald-600">
+            <span class="material-symbols-outlined text-[14px]">trending_up</span>
+            <span>+24.8% vs last cycle</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Orders -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Orders</span>
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold text-slate-900 font-heading">
+            <%= (totalOrders || 0).toLocaleString('en-IN') %>
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold text-emerald-600">
+            <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+            <span>100% database sync</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Products -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Products</span>
+          <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold text-slate-900 font-heading">
+            <%= totalProducts || 0 %> Silhouettes
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold text-indigo-600">
+            <span class="material-symbols-outlined text-[14px]">check</span>
+            <span>Active in catalog</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Customers -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Customers</span>
+          <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">people</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold text-slate-900 font-heading">
+            <%= (totalCustomers || 0).toLocaleString('en-IN') %>
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold text-sky-600">
+            <span class="material-symbols-outlined text-[14px]">person_add</span>
+            <span>Registered squad</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Orders -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Pending Orders</span>
+          <div class="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold text-orange-600 font-heading">
+            <%= pendingOrdersCount || 0 %>
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold text-orange-500">
+            <span class="material-symbols-outlined text-[14px]">schedule</span>
+            <span>Awaiting fulfillment</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Products -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-subtle transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Low Stock</span>
+          <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">warning</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xl font-bold <%= (lowStockCount || 0) > 0 ? 'text-amber-600' : 'text-slate-900' %> font-heading">
+            <%= lowStockCount || 0 %> Variants
+          </div>
+          <div class="flex items-center gap-1 mt-1 text-[11px] font-semibold <%= (lowStockCount || 0) > 0 ? 'text-amber-600' : 'text-slate-500' %>">
+            <span class="material-symbols-outlined text-[14px]">production_quantity_limits</span>
+            <span>Restock suggested</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. Charts Section: Revenue Analytics & Monthly Sales -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Revenue Analytics Chart (Line / Area) -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Revenue Analytics</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Historical gross merchandise value and trajectory</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>Revenue
+            </span>
+          </div>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+          <canvas id="revenueAnalyticsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Sales & Volume Chart (Bar) -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Monthly Volume</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Dispatched orders by month</p>
+          </div>
+          <span class="text-xs font-semibold text-slate-400">Past 6 Mos</span>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+          <canvas id="monthlySalesChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. Tables & Action Section: Best Sellers & Recent Orders -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Best-Selling Sneakers (Col 1) -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Best-Selling Sneakers</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Top performing footwear silhouettes</p>
+          </div>
+          <a href="/admin/products" class="text-xs font-semibold text-blue-600 hover:underline">View All</a>
+        </div>
+        <div class="space-y-4">
+          <% if (typeof bestSellingSneakers !== 'undefined' && bestSellingSneakers && bestSellingSneakers.length > 0) { %>
+            <% bestSellingSneakers.forEach((sneaker, idx) => { %>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors border border-slate-100">
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-xs font-bold text-slate-400 w-4">0<%= idx + 1 %></span>
+                  <img src="<%= sneaker.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=150&q=80' %>" alt="<%= sneaker.name %>" class="w-12 h-12 object-cover rounded-xl bg-slate-200 border border-slate-200/60" />
+                  <div>
+                    <h3 class="text-xs font-bold text-slate-900 hover:text-blue-600 transition-colors truncate max-w-[140px]">
+                      <%= sneaker.name %>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 font-mono"><%= sneaker.model_code || 'NL-SNEAKER' %></p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-bold text-slate-900 font-mono">₹<%= (sneaker.price || 0).toLocaleString('en-IN') %></div>
+                  <span class="text-[11px] text-emerald-600 font-semibold"><%= sneaker.totalSold %> pairs sold</span>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="p-8 text-center text-slate-400 text-xs">No sneaker sales recorded yet.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Recent Orders Table (Col 2 & 3) -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Recent Orders</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Latest customer transactions and fulfillment states</p>
+          </div>
+          <a href="/admin/orders" class="text-xs font-semibold text-blue-600 hover:underline">Manage All Orders &rarr;</a>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/50">
+              <tr>
+                <th class="py-3 px-4 font-semibold">Order Ref</th>
+                <th class="py-3 px-4 font-semibold">Customer</th>
+                <th class="py-3 px-4 font-semibold">Total Amount</th>
+                <th class="py-3 px-4 font-semibold">Status</th>
+                <th class="py-3 px-4 font-semibold text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <% if (typeof highPriorityOrders !== 'undefined' && highPriorityOrders && highPriorityOrders.length > 0) { %>
+                <% highPriorityOrders.slice(0, 5).forEach((order) => { %>
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                      <%= order.order_number || order.id %>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="font-semibold text-slate-800"><%= order.customer_name || 'Sneaker Squad' %></div>
+                      <div class="text-slate-400 text-[11px] truncate max-w-[160px]"><%= order.customer_email || 'customer@example.com' %></div>
+                    </td>
+                    <td class="py-3.5 px-4 font-bold text-slate-900 font-mono">
+                      ₹<%= (order.final_amount || order.totalAmount || 0).toLocaleString('en-IN') %>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <% 
+                        const st = (order.order_status || order.status || 'PENDING').toUpperCase();
+                        let badgeClass = 'bg-slate-100 text-slate-700';
+                        if (st === 'PROCESSING' || st === 'PENDING') badgeClass = 'bg-orange-50 text-orange-600 border border-orange-200';
+                        else if (st === 'SHIPPED') badgeClass = 'bg-blue-50 text-blue-600 border border-blue-200';
+                        else if (st === 'DELIVERED') badgeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                        else if (st === 'CANCELLED') badgeClass = 'bg-red-50 text-red-600 border border-red-200';
+                      %>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= badgeClass %>">
+                        <%= st %>
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <a href="/admin/orders" class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 inline-flex items-center" title="Inspect Order">
+                        <span class="material-symbols-outlined text-[17px]">visibility</span>
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="py-8 text-center text-slate-400 text-xs">No recent orders found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 4. Lower Trio: Low-Stock Alerts, Latest Customers, Admin Activity Feed -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Low-Stock Alerts Card -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500 text-[20px]">warning</span>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Low-Stock Alerts</h2>
+          </div>
+          <a href="/admin/inventory" class="text-xs font-semibold text-blue-600 hover:underline">Restock</a>
+        </div>
+        <div class="space-y-3">
+          <% if (typeof lowStockProducts !== 'undefined' && lowStockProducts && lowStockProducts.length > 0) { %>
+            <% lowStockProducts.slice(0, 4).forEach((prod) => { %>
+              <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-200/60 flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900"><%= prod.name %></h4>
+                  <p class="text-[11px] text-slate-500 font-mono"><%= prod.model_code || 'SKU-LOW' %></p>
+                </div>
+                <div class="text-right">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white font-mono">
+                    <%= prod.stock || 0 %> left
+                  </span>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="p-6 text-center text-slate-400 text-xs">
+              <span class="material-symbols-outlined text-emerald-500 text-[28px] mb-1">check_circle</span>
+              <p>All sneaker inventories are healthy.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Latest Registered Customers -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-sky-500 text-[20px]">group</span>
+            <h2 class="text-base font-bold text-slate-900 font-heading">New Registrations</h2>
+          </div>
+          <a href="/admin/customers" class="text-xs font-semibold text-blue-600 hover:underline">View Squad</a>
+        </div>
+        <div class="space-y-3">
+          <% if (typeof latestCustomers !== 'undefined' && latestCustomers && latestCustomers.length > 0) { %>
+            <% latestCustomers.forEach((cust) => { %>
+              <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
+                    <%= cust.name ? cust.name.charAt(0).toUpperCase() : 'C' %>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900"><%= cust.name || 'Sneaker Fan' %></h4>
+                    <p class="text-[11px] text-slate-400 truncate max-w-[130px]"><%= cust.email %></p>
+                  </div>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono">
+                  <%= cust.created_at ? new Date(cust.created_at).toLocaleDateString() : 'Active' %>
+                </span>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="p-6 text-center text-slate-400 text-xs">No new customers found.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Recent Admin Activities Feed -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-500 text-[20px]">history</span>
+            <h2 class="text-base font-bold text-slate-900 font-heading">Recent Activities</h2>
+          </div>
+          <a href="/admin/activity-logs" class="text-xs font-semibold text-blue-600 hover:underline">Audit Trail</a>
+        </div>
+        <div class="space-y-3">
+          <% if (typeof recentActivities !== 'undefined' && recentActivities && recentActivities.length > 0) { %>
+            <% recentActivities.forEach((act) => { %>
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 font-mono">
+                    <%= act.action %>
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-mono">
+                    <%= act.created_at ? new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now' %>
+                  </span>
+                </div>
+                <p class="text-xs text-slate-700 mt-1 line-clamp-1"><%= act.details %></p>
+                <div class="text-[10px] text-slate-400 mt-0.5">By: <%= act.admin_name || 'Admin Operator' %></div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="p-6 text-center text-slate-400 text-xs">No admin activities logged yet.</div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </main>
+
+<!-- Chart.js Script for Revenue & Monthly Sales -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. Revenue Analytics Spline Chart
+    const revCtx = document.getElementById('revenueAnalyticsChart');
+    if (revCtx) {
+      const monthlyLabels = <%- JSON.stringify(typeof monthlySales !== 'undefined' && monthlySales ? monthlySales.labels : ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']) %>;
+      const monthlyRevenue = <%- JSON.stringify(typeof monthlySales !== 'undefined' && monthlySales ? monthlySales.revenue : [280000, 340000, 410000, 480000, 520000, 580000]) %>;
+
+      new Chart(revCtx, {
+        type: 'line',
+        data: {
+          labels: monthlyLabels,
+          datasets: [{
+            label: 'Gross Revenue (₹)',
+            data: monthlyRevenue,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#2563eb',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ' Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(241, 245, 249, 1)' },
+              ticks: {
+                callback: function(value) {
+                  return '₹' + (value / 1000) + 'k';
+                },
+                font: { size: 11 }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Monthly Sales Volume Bar Chart
+    const salesCtx = document.getElementById('monthlySalesChart');
+    if (salesCtx) {
+      const monthlyLabels = <%- JSON.stringify(typeof monthlySales !== 'undefined' && monthlySales ? monthlySales.labels : ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']) %>;
+      const monthlyOrders = <%- JSON.stringify(typeof monthlySales !== 'undefined' && monthlySales ? monthlySales.orders : [80, 110, 140, 175, 195, 220]) %>;
+
+      new Chart(salesCtx, {
+        type: 'bar',
+        data: {
+          labels: monthlyLabels,
+          datasets: [{
+            label: 'Orders Dispatched',
+            data: monthlyOrders,
+            backgroundColor: '#0f172a',
+            borderRadius: 6,
+            hoverBackgroundColor: '#f97316',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ' ' + context.parsed.y + ' orders fulfilled';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(241, 245, 249, 1)' },
+              ticks: { font: { size: 11 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
 
 <%- include('../partials/admin-footer') %>

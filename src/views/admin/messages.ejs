@@ -1,0 +1,133 @@
+<%- include('../partials/admin-header', { title: 'Contact Messages & Support - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'messages', activeSection: 'Customers' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'messages', activeSection: 'Customers' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Contact Messages &amp; Inquiries</h1>
+        <p class="text-sm text-slate-500 mt-1">Customer support inquiries, drop collaboration questions, and ticket resolution.</p>
+      </div>
+
+      <!-- Filters Form -->
+      <form method="GET" action="/admin/messages" class="flex flex-wrap items-center gap-2">
+        <select 
+          name="status" 
+          onchange="this.form.submit()" 
+          class="px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 shadow-xs cursor-pointer"
+        >
+          <option value="ALL" <%= currentStatus === 'ALL' ? 'selected' : '' %>>All Inquiries</option>
+          <option value="UNREAD" <%= currentStatus === 'UNREAD' ? 'selected' : '' %>>Unread (Action Needed)</option>
+          <option value="READ" <%= currentStatus === 'READ' ? 'selected' : '' %>>Read</option>
+          <option value="RESOLVED" <%= currentStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+        </select>
+
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+          <input 
+            name="search"
+            value="<%= searchQuery || '' %>"
+            class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-800 shadow-xs"
+            placeholder="Search sender, subject..."
+            type="text"
+          />
+        </div>
+        <button type="submit" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+          Filter
+        </button>
+      </form>
+    </div>
+
+    <!-- Messages Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Sender Details</th>
+              <th class="py-3.5 px-4 font-semibold">Subject Line</th>
+              <th class="py-3.5 px-4 font-semibold">Message Preview</th>
+              <th class="py-3.5 px-4 font-semibold">Received Date</th>
+              <th class="py-3.5 px-4 font-semibold">Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (messages && messages.length > 0) { %>
+              <% messages.forEach(m => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold text-slate-900"><%= m.name || 'Customer' %></div>
+                    <div class="text-[11px] text-slate-400 font-mono"><%= m.email %></div>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-bold text-slate-800 max-w-[200px] truncate">
+                    <%= m.subject || 'Order & Fitment Inquiry' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-slate-600 max-w-sm">
+                    <p class="truncate"><%= m.message %></p>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-mono text-slate-500">
+                    <%= m.created_at ? new Date(m.created_at).toLocaleString() : 'Recent' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <% 
+                      const st = (m.status || 'UNREAD').toUpperCase();
+                      let statusBadge = 'bg-orange-50 text-orange-600 border border-orange-200';
+                      if (st === 'READ') statusBadge = 'bg-blue-50 text-blue-600 border border-blue-200';
+                      else if (st === 'RESOLVED') statusBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                    %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= statusBadge %>">
+                      <%= st %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <% if (st !== 'RESOLVED') { %>
+                        <form method="POST" action="/admin/messages/<%= m.id %>/status" class="inline">
+                          <input type="hidden" name="status" value="RESOLVED">
+                          <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors">
+                            Resolve
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <form method="POST" action="/admin/messages/<%= m.id %>/status" class="inline">
+                          <input type="hidden" name="status" value="UNREAD">
+                          <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+                            Reopen
+                          </button>
+                        </form>
+                      <% } %>
+                      <form method="POST" action="/admin/messages/<%= m.id %>/delete" onsubmit="return confirm('Delete message?');" class="inline">
+                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100" title="Delete Message">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">chat</span>
+                  <p class="font-medium text-sm text-slate-600">No contact messages found.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

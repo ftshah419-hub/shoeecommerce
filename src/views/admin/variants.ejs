@@ -1,0 +1,347 @@
+<%- include('../partials/admin-header', { title: 'Product Variants & Sizes - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'variants', activeSection: 'Catalog' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'variants', activeSection: 'Catalog' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Header with Breadcrumbs & Action CTA -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Sneaker Product Variants</h1>
+        <p class="text-sm text-slate-500 mt-1">Manage sizes, colorways, SKU identifiers, price adjustments, and variant stock.</p>
+      </div>
+      <button 
+        type="button" 
+        onclick="openModal('addVariantModal')"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+      >
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        <span>Create Variant</span>
+      </button>
+    </div>
+
+    <!-- Variant Stats Overview -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Total Variants</span>
+        <div class="text-xl font-bold text-slate-900 font-heading mt-1"><%= variants.length %></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">In Stock</span>
+        <div class="text-xl font-bold text-emerald-600 font-heading mt-1">
+          <%= variants.filter(v => v.stock_quantity > (v.low_stock_threshold || 5)).length %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Low Stock</span>
+        <div class="text-xl font-bold text-amber-600 font-heading mt-1">
+          <%= variants.filter(v => v.stock_quantity > 0 && v.stock_quantity <= (v.low_stock_threshold || 5)).length %>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card">
+        <span class="text-xs font-medium text-slate-500 uppercase">Out of Stock</span>
+        <div class="text-xl font-bold text-red-600 font-heading mt-1">
+          <%= variants.filter(v => v.stock_quantity <= 0).length %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card flex flex-col md:flex-row items-center justify-between gap-4">
+      <form method="GET" action="/admin/variants" class="w-full flex flex-col sm:flex-row items-center gap-3">
+        <!-- Search Input -->
+        <div class="relative flex-1 w-full">
+          <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">search</span>
+          <input 
+            type="text" 
+            name="search" 
+            value="<%= searchQuery || '' %>"
+            placeholder="Search by SKU, colorway, size or sneaker..."
+            class="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+          />
+        </div>
+
+        <!-- Filter by Silhouette -->
+        <select 
+          name="product_id" 
+          onchange="this.form.submit()"
+          class="w-full sm:w-48 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-700"
+        >
+          <option value="">All Silhouettes</option>
+          <% products.forEach(p => { %>
+            <option value="<%= p.id %>" <%= filterProductId === p.id ? 'selected' : '' %>><%= p.name %></option>
+          <% }) %>
+        </select>
+
+        <!-- Filter by Stock Status -->
+        <select 
+          name="stock_status" 
+          onchange="this.form.submit()"
+          class="w-full sm:w-36 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-700"
+        >
+          <option value="">All Stock</option>
+          <option value="in" <%= filterStockStatus === 'in' ? 'selected' : '' %>>In Stock</option>
+          <option value="low" <%= filterStockStatus === 'low' ? 'selected' : '' %>>Low Stock</option>
+          <option value="out" <%= filterStockStatus === 'out' ? 'selected' : '' %>>Out of Stock</option>
+        </select>
+
+        <button type="submit" class="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors w-full sm:w-auto">
+          Filter
+        </button>
+        <% if (searchQuery || filterProductId || filterStockStatus) { %>
+          <a href="/admin/variants" class="px-3 py-2 text-xs text-slate-500 hover:text-slate-800 transition-colors">Reset</a>
+        <% } %>
+      </form>
+    </div>
+
+    <!-- Variants Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Sneaker Silhouette</th>
+              <th class="py-3.5 px-4 font-semibold">SKU Code</th>
+              <th class="py-3.5 px-4 font-semibold">Size</th>
+              <th class="py-3.5 px-4 font-semibold">Colorway</th>
+              <th class="py-3.5 px-4 font-semibold">Additional Price</th>
+              <th class="py-3.5 px-4 font-semibold">Stock Quantity</th>
+              <th class="py-3.5 px-4 font-semibold">Status</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (variants && variants.length > 0) { %>
+              <% variants.forEach(v => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4">
+                    <div class="flex items-center gap-3">
+                      <img 
+                        src="<%= v.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80' %>" 
+                        alt="<%= v.product_name %>" 
+                        class="w-10 h-10 object-cover rounded-xl bg-slate-100 border border-slate-200/60"
+                      />
+                      <div>
+                        <div class="font-bold text-slate-900"><%= v.product_name %></div>
+                        <div class="text-[11px] text-slate-400 font-mono"><%= v.product_brand %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                    <%= v.sku %>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 font-mono font-bold text-[11px]">
+                      <%= v.size %>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <div class="flex items-center gap-2">
+                      <span class="w-3 h-3 rounded-full border border-slate-300 shadow-2xs" style="background-color: <%= v.color_code || '#0f172a' %>"></span>
+                      <span class="text-slate-800 font-medium"><%= v.color %></span>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-slate-700">
+                    <% if (v.additional_price > 0) { %>
+                      <span class="text-emerald-600 font-semibold">+₹<%= v.additional_price.toLocaleString('en-IN') %></span>
+                    <% } else { %>
+                      <span class="text-slate-400">₹0 (Base)</span>
+                    <% } %>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                    <%= v.stock_quantity %> units
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <% 
+                      let statusBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                      let statusText = 'IN STOCK';
+                      if (v.stock_quantity <= 0) {
+                        statusBadge = 'bg-red-50 text-red-600 border border-red-200';
+                        statusText = 'DEPLETED';
+                      } else if (v.stock_quantity <= (v.low_stock_threshold || 5)) {
+                        statusBadge = 'bg-amber-50 text-amber-600 border border-amber-200';
+                        statusText = 'LOW STOCK';
+                      }
+                    %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= statusBadge %>">
+                      <%= statusText %>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <button 
+                        type="button" 
+                        onclick="editVariant(<%= JSON.stringify(v) %>)"
+                        class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100" 
+                        title="Edit Variant"
+                      >
+                        <span class="material-symbols-outlined text-[17px]">edit</span>
+                      </button>
+                      <form method="POST" action="/admin/variants/<%= v.id %>/delete" onsubmit="return confirm('Remove variant <%= v.sku %>?');" class="inline">
+                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100" title="Delete Variant">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">style</span>
+                  <p class="font-medium text-sm text-slate-600">No product variants match your query.</p>
+                  <p class="text-xs text-slate-400 mt-1">Add new size or color runs using the Create Variant button above.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal: Add New Variant -->
+<div id="addVariantModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-elevated border border-slate-200">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 font-heading">Add Product Variant</h3>
+        <p class="text-xs text-slate-500">Configure size, color, SKU and stock for a sneaker silhouette.</p>
+      </div>
+      <button onclick="closeModal('addVariantModal')" class="text-slate-400 hover:text-slate-600 p-1">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <form method="POST" action="/admin/variants" class="space-y-4 mt-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Sneaker Model *</label>
+        <select name="product_id" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800">
+          <% products.forEach(p => { %>
+            <option value="<%= p.id %>"><%= p.name %> (<%= p.brand %>)</option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Size (UK / US) *</label>
+          <input type="text" name="size" required placeholder="e.g. UK 9.5" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">SKU Barcode</label>
+          <input type="text" name="sku" placeholder="Auto-generated if blank" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Color Name</label>
+          <input type="text" name="color" placeholder="e.g. Cobalt Runner" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Color Hex</label>
+          <input type="text" name="color_code" placeholder="#1536c8" value="#1536c8" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Initial Stock *</label>
+          <input type="number" name="stock_quantity" required value="20" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Additional Price (₹)</label>
+          <input type="number" name="additional_price" value="0" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('addVariantModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all">
+          Save Variant
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Variant -->
+<div id="editVariantModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-elevated border border-slate-200">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 font-heading">Edit Product Variant</h3>
+        <p class="text-xs text-slate-500">Update SKU code, size, color, stock, and pricing increment.</p>
+      </div>
+      <button onclick="closeModal('editVariantModal')" class="text-slate-400 hover:text-slate-600 p-1">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <form id="editVariantForm" method="POST" action="" class="space-y-4 mt-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">SKU Barcode</label>
+          <input id="edit_sku" type="text" name="sku" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Size (UK/US)</label>
+          <input id="edit_size" type="text" name="size" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Colorway</label>
+          <input id="edit_color" type="text" name="color" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Color Hex</label>
+          <input id="edit_color_code" type="text" name="color_code" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Stock Quantity</label>
+          <input id="edit_stock" type="number" name="stock_quantity" required min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Additional Price (₹)</label>
+          <input id="edit_price" type="number" name="additional_price" min="0" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 text-slate-800" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('editVariantModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all">
+          Update Specifications
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function editVariant(v) {
+    document.getElementById('editVariantForm').action = '/admin/variants/' + v.id + '/edit';
+    document.getElementById('edit_sku').value = v.sku || '';
+    document.getElementById('edit_size').value = v.size || '';
+    document.getElementById('edit_color').value = v.color || '';
+    document.getElementById('edit_color_code').value = v.color_code || '#0f172a';
+    document.getElementById('edit_stock').value = v.stock_quantity || 0;
+    document.getElementById('edit_price').value = v.additional_price || 0;
+    openModal('editVariantModal');
+  }
+</script>
+
+<%- include('../partials/admin-footer') %>

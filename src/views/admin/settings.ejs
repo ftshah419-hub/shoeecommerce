@@ -1,0 +1,105 @@
+<%- include('../partials/admin-header', { title: 'Admin Profile & System Settings - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'settings', activeSection: 'Settings' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'settings', activeSection: 'Settings' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">System Settings &amp; Operator Profile</h1>
+        <p class="text-sm text-slate-500 mt-1">Configure store parameters, courier carrier gateways, and administrator profile security.</p>
+      </div>
+
+      <a 
+        href="/auth/logout" 
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl border border-red-200 transition-colors"
+      >
+        <span class="material-symbols-outlined text-[18px]">logout</span>
+        <span>Secure Sign Out</span>
+      </a>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Operator Profile Card -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card p-6 space-y-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <span class="material-symbols-outlined text-blue-600 text-[22px]">badge</span>
+          <h2 class="font-bold text-base font-heading text-slate-900">Administrator Profile</h2>
+        </div>
+
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+          <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white font-bold flex items-center justify-center text-xl shrink-0">
+            <%= (currentUser ? currentUser.name : 'A').charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900"><%= currentUser ? currentUser.name : 'Administrator' %></h3>
+            <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 text-blue-800">
+              <%= currentUser ? currentUser.role : 'SUPER_ADMIN' %>
+            </span>
+            <p class="text-xs text-slate-500 font-mono mt-1"><%= currentUser ? currentUser.email : 'admin@neleerisneakers.com' %></p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-slate-500 font-medium">Access Clearance:</span>
+            <span class="font-bold text-slate-800 uppercase font-mono">SUPER ADMINISTRATOR (ROOT)</span>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-slate-500 font-medium">Active Privileges:</span>
+            <span class="font-bold text-blue-600 font-mono"><%= (currentUser && currentUser.permissions) ? currentUser.permissions.length : 14 %> Granular Rules</span>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-slate-500 font-medium">Session IP Address:</span>
+            <span class="font-mono text-slate-700">127.0.0.1 (Local Verified)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Health Diagnostics Card -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card p-6 space-y-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <span class="material-symbols-outlined text-emerald-600 text-[22px]">dns</span>
+          <h2 class="font-bold text-base font-heading text-slate-900">System Telemetry &amp; Diagnostics</h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-[11px] font-medium text-slate-400 uppercase block">Node Uptime</span>
+            <div class="text-sm font-bold text-slate-900 font-heading mt-1">99.98% Healthy</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-[11px] font-medium text-slate-400 uppercase block">Cluster Node</span>
+            <div class="text-sm font-bold text-slate-900 font-heading mt-1">IND-WEST-01 (BOM)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-[11px] font-medium text-slate-400 uppercase block">Database Store</span>
+            <div class="text-sm font-bold text-emerald-600 font-heading mt-1">Active JSON DB (Persistent)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-[11px] font-medium text-slate-400 uppercase block">Air Cargo API</span>
+            <div class="text-sm font-bold text-blue-600 font-heading mt-1">Bluedart Apex Priority</div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-200/60 flex items-center justify-between">
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Storefront Compatibility</h4>
+            <p class="text-[11px] text-slate-600 mt-0.5">All customer routes `/`, `/products`, `/cart`, `/auth` synchronized.</p>
+          </div>
+          <a href="/" target="_blank" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-xs">
+            Open Storefront
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>

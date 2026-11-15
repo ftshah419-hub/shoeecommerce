@@ -1,0 +1,110 @@
+<%- include('../partials/admin-header', { title: 'Activity Logs & Audit Trail - Neleeri Sneakers' }) %>
+<%- include('../partials/admin-sidebar', { activePage: 'activity-logs', activeSection: 'Administration' }) %>
+<%- include('../partials/admin-topbar', { activePage: 'activity-logs', activeSection: 'Administration' }) %>
+
+<main id="adminMainContent" class="transition-all duration-300 lg:pl-64 pt-16 min-h-screen bg-slate-50">
+  <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold font-heading text-slate-900 tracking-tight">Admin Activity &amp; Audit Trail</h1>
+        <p class="text-sm text-slate-500 mt-1">Immutable security log of operator actions, status overrides, price changes, and clearance delegations.</p>
+      </div>
+
+      <!-- Filter bar -->
+      <form method="GET" action="/admin/activity-logs" class="flex flex-wrap items-center gap-2">
+        <select 
+          name="module" 
+          onchange="this.form.submit()" 
+          class="px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 shadow-xs cursor-pointer"
+        >
+          <option value="ALL" <%= currentModule === 'ALL' ? 'selected' : '' %>>All Modules</option>
+          <option value="OPERATIONS" <%= currentModule === 'OPERATIONS' ? 'selected' : '' %>>Operations</option>
+          <option value="PRODUCTS" <%= currentModule === 'PRODUCTS' ? 'selected' : '' %>>Products</option>
+          <option value="INVENTORY" <%= currentModule === 'INVENTORY' ? 'selected' : '' %>>Inventory</option>
+          <option value="MARKETING" <%= currentModule === 'MARKETING' ? 'selected' : '' %>>Marketing</option>
+          <option value="CUSTOMER_SQUAD" <%= currentModule === 'CUSTOMER_SQUAD' ? 'selected' : '' %>>Customers</option>
+          <option value="ADMINISTRATION" <%= currentModule === 'ADMINISTRATION' ? 'selected' : '' %>>Administration</option>
+        </select>
+
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+          <input 
+            name="search"
+            value="<%= searchQuery || '' %>"
+            class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-800 shadow-xs"
+            placeholder="Search action, details, operator..."
+            type="text"
+          />
+        </div>
+        <button type="submit" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+          Filter
+        </button>
+      </form>
+    </div>
+
+    <!-- Audit Logs Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b border-slate-100 bg-slate-50/70">
+            <tr>
+              <th class="py-3.5 px-4 font-semibold">Timestamp</th>
+              <th class="py-3.5 px-4 font-semibold">Admin Operator</th>
+              <th class="py-3.5 px-4 font-semibold">Action Type</th>
+              <th class="py-3.5 px-4 font-semibold">Domain Module</th>
+              <th class="py-3.5 px-4 font-semibold">Event Specification Details</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Origin IP</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (logs && logs.length > 0) { %>
+              <% logs.forEach(log => { %>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3.5 px-4 font-mono text-slate-500 text-[11px]">
+                    <%= log.created_at ? new Date(log.created_at).toLocaleString() : 'Recent' %>
+                  </td>
+
+                  <td class="py-3.5 px-4 font-bold text-slate-900">
+                    <%= log.admin_name || 'Admin Operator' %>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <span class="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                      <%= log.action %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-600">
+                      <%= log.module || 'SYSTEM' %>
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-slate-700 font-medium max-w-md">
+                    <%= log.details %>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right font-mono text-slate-400 text-[11px]">
+                    <%= log.ip_address || '127.0.0.1' %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="py-12 text-center text-slate-400">
+                  <span class="material-symbols-outlined text-[32px] text-slate-300 block mb-2">history</span>
+                  <p class="font-medium text-sm text-slate-600">No activity logs recorded yet.</p>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/admin-footer') %>
