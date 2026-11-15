@@ -1,0 +1,345 @@
+<%- include('partials/header', { title: 'User Settings & Security - Neleeri Sneakers' }) %>
+<%- include('partials/user-hero', { activeTab: 'settings' }) %>
+
+<main class="w-full px-4 md:px-12 py-8 space-y-12">
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-primary-container/20 border border-primary text-primary px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        <span class="font-label-tech text-xs"><%= success %></span>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-on-surface hover:text-white">&times;</button>
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-error-container/30 border border-error text-error px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">error</span>
+        <span class="font-label-tech text-xs"><%= error %></span>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-on-surface hover:text-white">&times;</button>
+    </div>
+  <% } %>
+
+  <!-- SECTION 1: Saved Street Addresses (addresses table) -->
+  <section class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div>
+        <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[GEO_04 // DROP LOCATIONS]</span>
+        <h2 class="font-headline-lg text-2xl uppercase text-on-surface tracking-tight font-bold">Saved Street Addresses</h2>
+      </div>
+      <p class="font-label-tech text-xs text-tertiary uppercase">
+        <%= addresses ? addresses.length : 0 %> ACTIVE DELIVERY NODES STORED
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% if (addresses && addresses.length > 0) { %>
+        <% addresses.forEach(addr => { %>
+          <div class="bg-surface-container-low p-6 flex flex-col justify-between shadow-md border border-outline-variant/30 relative">
+            <div>
+              <!-- Header Badges -->
+              <div class="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+                <% if (addr.is_default) { %>
+                  <span class="font-label-caps text-[10px] uppercase px-2 py-0.5 bg-primary-container text-on-primary font-bold">
+                    DEFAULT ADDRESS
+                  </span>
+                  <span class="material-symbols-outlined text-primary text-[20px]">verified</span>
+                <% } else { %>
+                  <span class="font-label-caps text-[10px] uppercase px-2 py-0.5 bg-surface-container-high text-on-surface-variant font-bold">
+                    SECONDARY NODE
+                  </span>
+                  <form action="/user/addresses/<%= addr.id %>/default" method="POST" class="inline">
+                    <button type="submit" class="font-label-tech text-[10px] uppercase text-primary hover:underline">
+                      Set As Default
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+
+              <!-- Address Details matching addresses table columns -->
+              <div class="space-y-2 pt-4">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-headline-sm text-base uppercase text-on-surface font-bold"><%= addr.full_name %></h3>
+                  <span class="font-label-tech text-[10px] bg-surface-container px-1.5 py-0.5 text-on-surface-variant font-semibold">
+                    <%= addr.address_type %>
+                  </span>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                  <%= addr.address_line1 %><br/>
+                  <% if (addr.address_line2) { %><%= addr.address_line2 %><br/><% } %>
+                  <%= addr.city %>, <%= addr.state %> — <%= addr.postal_code %><br/>
+                  <%= addr.country %>
+                </p>
+                <div class="pt-2 flex items-center gap-1.5 font-label-tech text-xs text-on-surface">
+                  <span class="material-symbols-outlined text-[15px] text-tertiary">call</span>
+                  <span><%= addr.phone %></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="pt-6 flex items-center gap-3 font-label-caps text-xs uppercase border-t border-outline-variant/20 mt-4">
+              <form action="/user/addresses/<%= addr.id %>/delete" method="POST" onsubmit="return confirm('Remove this delivery coordinate?');" class="inline">
+                <button type="submit" class="text-error hover:text-error-container transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">delete</span>
+                  <span>Remove</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <!-- Add New Tactical Address Tile / Trigger -->
+      <div class="bg-surface-container-low p-6 border-2 border-dashed border-outline-variant/40 hover:border-primary/60 transition-colors flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">add_location_alt</span>
+            <h3 class="font-headline-sm text-base uppercase text-on-surface font-bold">Register New Address</h3>
+          </div>
+          <p class="text-xs text-on-surface-variant">Add a new delivery coordinate linked to your customer ID in the `addresses` table.</p>
+        </div>
+
+        <button onclick="document.getElementById('address-modal').classList.remove('hidden')" 
+                class="w-full mt-6 bg-surface-container hover:bg-primary-container hover:text-on-primary text-on-surface py-2.5 px-4 font-label-caps text-xs uppercase transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          <span>Open Address Form</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: Tactical Security & Preferences (Stitch AI HUD) -->
+  <section class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div>
+        <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[SEC_05 // TACTICAL VAULT]</span>
+        <h2 class="font-headline-lg text-2xl uppercase text-on-surface tracking-tight font-bold">Security &amp; Preferences</h2>
+      </div>
+      <p class="font-label-tech text-xs text-tertiary uppercase">ENCRYPTION PROTOCOL: TLS 1.3 // 2FA SHIELD ACTIVE</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Credential & 2FA HUD Box -->
+      <div class="lg:col-span-8 bg-surface-container-low p-6 lg:p-8 border border-outline-variant/30 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Email Verification Module -->
+          <div class="bg-surface-container p-4 border border-outline-variant/20 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-label-tech text-xs uppercase text-tertiary">Primary Email</span>
+              <span class="font-label-tech text-[10px] bg-surface-container-high px-1.5 py-0.5 text-primary flex items-center gap-1 font-bold">
+                <span class="material-symbols-outlined text-[12px]">verified</span> VERIFIED
+              </span>
+            </div>
+            <p class="text-xs text-on-surface font-semibold truncate"><%= user.email %></p>
+            <span class="text-[10px] text-on-surface-variant font-mono">Status: Confirmed active</span>
+          </div>
+
+          <!-- Phone Verification Module -->
+          <div class="bg-surface-container p-4 border border-outline-variant/20 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-label-tech text-xs uppercase text-tertiary">Phone Number</span>
+              <span class="font-label-tech text-[10px] bg-secondary-container/40 px-1.5 py-0.5 text-secondary flex items-center gap-1 font-bold">
+                <span class="material-symbols-outlined text-[12px]">lock</span> 2FA ACTIVE
+              </span>
+            </div>
+            <p class="text-xs text-on-surface font-semibold truncate"><%= user.phone || '+91 98200 12345' %></p>
+            <span class="text-[10px] text-on-surface-variant font-mono">Hardware OTP Shield Linked</span>
+          </div>
+        </div>
+
+        <!-- Password Encryption Status Row -->
+        <div class="bg-surface-container p-4 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-surface-container-high flex items-center justify-center text-primary border border-primary/30">
+              <span class="material-symbols-outlined text-[20px]">key</span>
+            </div>
+            <div>
+              <p class="font-label-caps text-xs uppercase text-on-surface font-bold">Password Encryption</p>
+              <p class="font-label-tech text-[11px] text-on-surface-variant">Bcrypt 10 rounds salt &bull; Security rating: HIGH</p>
+            </div>
+          </div>
+          <button type="button" onclick="alert('Password reset link has been dispatched to your verified email coordinate.')" class="bg-surface-container-highest hover:bg-surface-bright text-on-surface px-4 py-2 font-label-caps text-xs uppercase transition-colors">
+            Reset Password
+          </button>
+        </div>
+
+        <!-- Size Preferences Matrix (Fast Checkout) -->
+        <div class="bg-surface-container-lowest p-5 border border-outline-variant/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-label-caps text-xs uppercase text-on-surface font-bold tracking-wider">Fast-Checkout Sizing Matrix</span>
+            <span class="font-label-tech text-[10px] text-primary font-bold">AUTO-APPLY: ON</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-surface-container p-3 border border-outline-variant/20 flex items-center justify-between">
+              <div>
+                <span class="font-label-tech text-[10px] text-tertiary uppercase block">Footwear Spec</span>
+                <span class="font-headline-sm text-sm text-on-surface font-bold">UK 9.0 (EU 43.5)</span>
+              </div>
+              <span class="material-symbols-outlined text-primary text-[18px]">check</span>
+            </div>
+            <div class="bg-surface-container p-3 border border-outline-variant/20 flex items-center justify-between">
+              <div>
+                <span class="font-label-tech text-[10px] text-tertiary uppercase block">Apparel Spec</span>
+                <span class="font-headline-sm text-sm text-on-surface font-bold">SIZE L (OVERSIZED)</span>
+              </div>
+              <span class="material-symbols-outlined text-primary text-[18px]">check</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Sessions & Security Logs (user_sessions & login_logs tables) -->
+        <div class="space-y-3 pt-2">
+          <span class="font-label-caps text-xs uppercase text-on-surface font-bold tracking-wider block">
+            Active Telemetry Sessions (user_sessions)
+          </span>
+          <div class="space-y-2">
+            <% (sessions || []).forEach(sess => { %>
+              <div class="bg-surface-container p-3 border border-outline-variant/20 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[16px]">devices</span>
+                  <div>
+                    <span class="font-mono text-on-surface font-bold"><%= sess.ip_address %></span>
+                    <p class="text-[10px] text-on-surface-variant"><%= sess.device_info %></p>
+                  </div>
+                </div>
+                <span class="font-label-tech text-[10px] text-secondary font-bold">ACTIVE NOW</span>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Session Exit Column -->
+      <div class="lg:col-span-4 flex flex-col justify-between gap-6">
+        <!-- Squad Pass Card -->
+        <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-3 relative overflow-hidden">
+          <div class="absolute -bottom-8 -right-8 w-24 h-24 bg-secondary-container/20 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex items-center gap-1 font-label-tech text-xs text-secondary">
+            <span class="material-symbols-outlined text-[16px]">military_tech</span>
+            <span class="tracking-widest uppercase">BLACK PASS PRIVILEGE</span>
+          </div>
+          <h4 class="font-headline-sm text-lg uppercase text-on-surface font-bold">Secret Lab Drop: 28 OCT</h4>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Your Level 3 membership permits 15-minute priority whitelist access prior to the global public drop.
+          </p>
+          <div class="w-full bg-surface-container p-2.5 flex justify-between font-label-tech text-xs border border-outline-variant/30">
+            <span class="text-tertiary">TOKEN CODE:</span>
+            <span class="text-primary font-bold tracking-widest font-mono">#BLK-9982-IN</span>
+          </div>
+        </div>
+
+        <!-- Clean Sign Out Action Section -->
+        <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-error-container/20 text-error flex items-center justify-center border border-error/30">
+              <span class="material-symbols-outlined text-[20px]">power_settings_new</span>
+            </div>
+            <div>
+              <p class="font-label-caps text-xs uppercase text-on-surface font-bold">Session Termination</p>
+              <p class="font-label-tech text-[10px] text-tertiary">NODE MUM-APEX-01</p>
+            </div>
+          </div>
+          <a href="/auth/logout" class="w-full bg-surface-container hover:bg-error-container hover:text-on-error-container text-error py-2.5 px-4 font-label-caps text-xs uppercase transition-colors flex items-center justify-center gap-2 border border-outline-variant/30 font-bold">
+            <span class="material-symbols-outlined text-[16px]">logout</span>
+            <span>Sign Out Of Neleeri</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal: Add New Address Form -->
+<div id="address-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container-low border border-outline-variant/40 w-full max-w-lg p-6 lg:p-8 space-y-6 relative shadow-2xl">
+    <div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+      <div>
+        <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[MUTATION // INSERT ADDRESS]</span>
+        <h3 class="font-headline-lg text-lg uppercase text-on-surface font-bold">Register Delivery Coordinate</h3>
+      </div>
+      <button onclick="document.getElementById('address-modal').classList.add('hidden')" class="text-on-surface hover:text-white text-xl">&times;</button>
+    </div>
+
+    <form action="/user/addresses" method="POST" class="space-y-4">
+      <input type="hidden" name="return_to" value="/user/settings" />
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Recipient Name</label>
+          <input type="text" name="full_name" value="<%= user.full_name || user.name %>" required
+                 class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Contact Phone</label>
+          <input type="tel" name="phone" value="<%= user.phone %>" required
+                 class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Address Line 1</label>
+        <input type="text" name="address_line1" placeholder="Flat / House / Suite, Street Name" required
+               class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Address Line 2 (Optional)</label>
+        <input type="text" name="address_line2" placeholder="Landmark, Area or Building"
+               class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">City</label>
+          <input type="text" name="city" required placeholder="e.g. Mumbai"
+                 class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">State</label>
+          <input type="text" name="state" required placeholder="e.g. Maharashtra"
+                 class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Postal Code</label>
+          <input type="text" name="postal_code" required placeholder="e.g. 400050"
+                 class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Address Type</label>
+          <select name="address_type" class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none">
+            <option value="HOME">HOME</option>
+            <option value="WORK">WORK / OFFICE</option>
+            <option value="STUDIO">STUDIO / LAB</option>
+          </select>
+        </div>
+        <div class="flex items-center pt-6">
+          <label class="flex items-center gap-2 cursor-pointer font-label-tech text-xs text-on-surface">
+            <input type="checkbox" name="is_default" class="w-4 h-4 text-primary rounded" />
+            <span>Set as Default Address</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-4 flex items-center justify-end gap-3 border-t border-outline-variant/20">
+        <button type="button" onclick="document.getElementById('address-modal').classList.add('hidden')" 
+                class="px-4 py-2 font-label-caps text-xs uppercase text-on-surface-variant hover:text-on-surface">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="bg-primary-container text-on-primary px-6 py-2 font-label-caps text-xs uppercase font-bold hover:bg-inverse-primary transition-all">
+          Save Address
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

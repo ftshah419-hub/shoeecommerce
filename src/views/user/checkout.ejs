@@ -1,0 +1,212 @@
+<%- include('partials/header', { title: 'Secure Checkout Logistics - Neleeri Sneakers' }) %>
+
+<main class="w-full pt-4 bg-background min-h-screen">
+  <div class="flex flex-col w-full">
+    <!-- Tactical Checkout Top Status Bar -->
+    <section class="w-full bg-surface-container-lowest py-4 px-4 md:px-12 border-b border-outline-variant/30">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span class="font-label-tech text-xs text-secondary flex items-center gap-1.5 uppercase font-bold">
+            <span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+            ENCRYPTED LINK ESTABLISHED // SECURE_PORT:8043
+          </span>
+          <span class="font-label-tech text-xs text-on-surface-variant hidden sm:inline">[SESSION: #NL-9921-X]</span>
+        </div>
+
+        <!-- Linear Stepper HUD -->
+        <nav aria-label="Checkout Progress" class="flex items-center gap-2 sm:gap-4 font-label-caps text-xs uppercase">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 bg-primary-container text-on-primary flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-[14px]">check</span>
+            </div>
+            <span class="text-on-surface">Identity</span>
+          </div>
+          <div class="w-6 sm:w-10 h-0.5 bg-primary-container"></div>
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 bg-primary text-on-primary-fixed flex items-center justify-center font-bold">
+              02
+            </div>
+            <span class="text-primary font-bold">Logistics</span>
+          </div>
+          <div class="w-6 sm:w-10 h-0.5 bg-surface-container-highest"></div>
+          <div class="flex items-center gap-2 opacity-60">
+            <div class="w-6 h-6 bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">
+              03
+            </div>
+            <span class="text-on-surface-variant">Payment</span>
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Error Alert -->
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="max-w-7xl mx-auto w-full px-4 md:px-12 pt-4">
+        <div class="bg-error-container/30 border border-error text-error px-4 py-3 flex items-center justify-between text-xs">
+          <span><%= error %></span>
+          <button onclick="this.parentElement.remove()" class="text-white font-bold">&times;</button>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Main Checkout Grid Canvas -->
+    <section class="w-full px-4 md:px-12 py-8 max-w-7xl mx-auto">
+      <form action="/checkout" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT COLUMN: Logistics & Coordinates Form (8 cols) -->
+        <div class="lg:col-span-8 space-y-8">
+          
+          <!-- Identity & Contact Details -->
+          <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-4">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="font-label-tech text-xs text-primary px-1.5 py-0.5 bg-primary-container/20">01</span>
+                <h2 class="font-headline-sm text-base uppercase text-on-surface font-bold">Identity // Contact</h2>
+              </div>
+              <span class="font-label-tech text-xs text-secondary flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">lock</span> VERIFIED VIP
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Customer Name</label>
+                <input type="text" name="full_name" value="<%= (typeof user !== 'undefined' && user) ? (user.full_name || user.name) : 'John Doe' %>" required
+                       class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+              </div>
+              <div>
+                <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Contact Phone</label>
+                <input type="text" name="phone" value="<%= (typeof user !== 'undefined' && user) ? (user.phone || '+91 98200 12345') : '+91 98200 12345' %>" required
+                       class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Address Details -->
+          <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-4">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="font-label-tech text-xs text-primary px-1.5 py-0.5 bg-primary-container/20">02</span>
+                <h2 class="font-headline-sm text-base uppercase text-on-surface font-bold">Dispatch Coordinates (addresses table)</h2>
+              </div>
+              <span class="font-label-tech text-xs text-tertiary">AIR WAYBILL DESTINATION</span>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Street Address Line</label>
+                <input type="text" name="street" value="<%= defaultAddress ? defaultAddress.address_line1 : 'Unit 402, Skyline Apex Streetwear Lab' %>" required
+                       placeholder="House, Flat or Building, Street Name"
+                       class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">City</label>
+                  <input type="text" name="city" value="<%= defaultAddress ? defaultAddress.city : 'Mumbai' %>" required
+                         class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">State / Province</label>
+                  <input type="text" name="state" value="<%= defaultAddress ? defaultAddress.state : 'Maharashtra' %>" required
+                         class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block font-label-tech text-xs uppercase text-tertiary mb-1">Postal Code</label>
+                  <input type="text" name="zipCode" value="<%= defaultAddress ? defaultAddress.postal_code : '400050' %>" required
+                         class="w-full bg-surface-container px-3 py-2 text-xs text-on-surface border border-outline-variant/40 focus:border-primary focus:outline-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method Selection -->
+          <div class="bg-surface-container-low p-6 border border-outline-variant/30 space-y-4">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="font-label-tech text-xs text-primary px-1.5 py-0.5 bg-primary-container/20">03</span>
+                <h2 class="font-headline-sm text-base uppercase text-on-surface font-bold">Payment Method (payments table)</h2>
+              </div>
+              <span class="font-label-tech text-xs text-primary">INSTANT CLEARANCE</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label class="bg-surface-container p-4 border border-primary flex flex-col justify-between cursor-pointer space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-caps text-xs uppercase font-bold text-on-surface">UPI / GPay</span>
+                  <input type="radio" name="payment_method" value="UPI" checked class="text-primary" />
+                </div>
+                <p class="text-[10px] text-on-surface-variant font-mono">Instant QR / VPA Zero Surcharge</p>
+              </label>
+
+              <label class="bg-surface-container p-4 border border-outline-variant/30 flex flex-col justify-between cursor-pointer space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-caps text-xs uppercase font-bold text-on-surface">Card / Visa</span>
+                  <input type="radio" name="payment_method" value="CARD" class="text-primary" />
+                </div>
+                <p class="text-[10px] text-on-surface-variant font-mono">All Major Credit/Debit Networks</p>
+              </label>
+
+              <label class="bg-surface-container p-4 border border-outline-variant/30 flex flex-col justify-between cursor-pointer space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-caps text-xs uppercase font-bold text-on-surface">Cash On Delivery</span>
+                  <input type="radio" name="payment_method" value="COD" class="text-primary" />
+                </div>
+                <p class="text-[10px] text-on-surface-variant font-mono">Pay Upon Doorstep Handover</p>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Order Review Terminal (4 cols) -->
+        <div class="lg:col-span-4 bg-surface-container-low p-6 lg:p-8 border border-outline-variant/30 space-y-6 shadow-xl sticky top-24">
+          <div class="border-b border-outline-variant/20 pb-4">
+            <span class="font-label-tech text-xs uppercase text-primary tracking-widest">[DISPATCH // MANIFEST]</span>
+            <h3 class="font-headline-sm text-lg uppercase text-on-surface font-bold">Order Manifest</h3>
+          </div>
+
+          <!-- Items list -->
+          <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+            <% (cart || []).forEach(item => { %>
+              <div class="flex items-center justify-between text-xs pb-2 border-b border-outline-variant/20">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-tertiary"><%= item.quantity %>x</span>
+                  <span class="text-on-surface font-semibold truncate max-w-[150px]"><%= item.name %></span>
+                  <span class="text-[10px] text-on-surface-variant">(UK <%= item.size %>)</span>
+                </div>
+                <span class="font-mono font-bold text-on-surface">$<%= (item.price * item.quantity).toFixed(2) %></span>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Summary Breakdown -->
+          <div class="space-y-2 text-xs font-label-tech border-t border-outline-variant/20 pt-4">
+            <div class="flex justify-between text-on-surface-variant">
+              <span>Subtotal</span>
+              <span class="font-mono text-on-surface font-bold">$<%= subtotal.toFixed(2) %></span>
+            </div>
+            <div class="flex justify-between text-on-surface-variant">
+              <span>Air Logistics Dispatch</span>
+              <span class="font-mono text-on-surface font-bold"><%= shipping === 0 ? 'FREE' : '$' + shipping.toFixed(2) %></span>
+            </div>
+            <div class="flex justify-between text-base font-bold border-t border-outline-variant/30 pt-3">
+              <span class="font-headline-sm uppercase text-on-surface">Total Valuation</span>
+              <span class="text-primary font-mono text-xl font-bold">$<%= total.toFixed(2) %></span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" 
+                  class="w-full bg-primary-container text-on-primary py-4 px-6 font-label-caps text-xs uppercase font-bold hover:bg-inverse-primary transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(21,54,200,0.5)]">
+            <span class="material-symbols-outlined text-[18px]">verified</span>
+            <span>Authorize &amp; Dispatch Order</span>
+          </button>
+        </div>
+
+      </form>
+    </section>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

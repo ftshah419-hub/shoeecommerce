@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title><%= typeof title !== 'undefined' ? title : 'Neleeri Sneakers - Premium Streetwear' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+  <style>
+    @layer base {
+      html, body { margin:0; padding:0; }
+      body { overscroll-behavior:none; }
+    }
+    ::-webkit-scrollbar { display:none; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#121316",
+            "on-primary-fixed-variant": "#0c31c4",
+            "surface-dim": "#121316",
+            "surface-container-lowest": "#0d0e11",
+            "secondary-fixed-dim": "#ffb59d",
+            "surface": "#121316",
+            "tertiary-container": "#474b53",
+            "on-primary": "#001e91",
+            "tertiary-fixed": "#e0e2ed",
+            "outline-variant": "#444655",
+            "surface-container-highest": "#343538",
+            "on-secondary-fixed-variant": "#832600",
+            "on-secondary": "#5d1900",
+            "tertiary": "#c3c6d0",
+            "secondary": "#ffb59d",
+            "on-tertiary-container": "#b8bbc5",
+            "on-primary-container": "#abb6ff",
+            "inverse-on-surface": "#2f3034",
+            "error-container": "#93000a",
+            "on-surface-variant": "#c5c5d7",
+            "surface-variant": "#343538",
+            "primary-fixed-dim": "#bac3ff",
+            "surface-bright": "#38393c",
+            "on-secondary-container": "#ffddd2",
+            "secondary-container": "#b83900",
+            "surface-container": "#1f1f23",
+            "primary-container": "#1536c8",
+            "on-tertiary-fixed-variant": "#43474f",
+            "outline": "#8f8fa0",
+            "on-secondary-fixed": "#390c00",
+            "surface-tint": "#bac3ff",
+            "tertiary-fixed-dim": "#c3c6d0",
+            "inverse-primary": "#334edc",
+            "on-background": "#e3e2e6",
+            "primary-fixed": "#dee0ff",
+            "on-error": "#690005",
+            "on-tertiary-fixed": "#181c23",
+            "on-tertiary": "#2d3038",
+            "inverse-surface": "#e3e2e6",
+            "surface-container-high": "#292a2d",
+            "surface-container-low": "#1b1b1f",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed": "#ffdbd0",
+            "primary": "#bac3ff",
+            "error": "#ffb4ab",
+            "on-primary-fixed": "#000f5c",
+            "on-surface": "#e3e2e6"
+          },
+          fontFamily: {
+            "headline-lg": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "display-promo": ["Anton"],
+            "label-tech": ["Space Grotesk"],
+            "headline-xl": ["Space Grotesk"],
+            "body-lg": ["Inter"],
+            "label-caps": ["Space Grotesk"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary">
+
+<!-- Tactical Top Navigation Header -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/85 backdrop-blur-xl border-b border-outline-variant/30">
+  <div class="h-20 w-full px-4 md:px-12 flex items-center justify-between gap-4">
+    <!-- Brand Logo -->
+    <div class="flex items-center gap-4">
+      <a class="flex items-center gap-2 group" href="/">
+        <span class="text-2xl">👟</span>
+        <span class="font-headline-sm uppercase tracking-tight text-on-surface font-bold">NELEERI <span class="text-primary text-xs tracking-widest px-1.5 py-0.5 bg-primary-container/30 border border-primary/40">LABS</span></span>
+      </a>
+    </div>
+
+    <!-- Center Nav Links -->
+    <nav class="hidden lg:flex items-center gap-8">
+      <a class="font-label-caps text-xs text-on-surface-variant hover:text-on-surface uppercase transition-colors" href="/">Home</a>
+      <a class="font-label-caps text-xs text-on-surface-variant hover:text-on-surface uppercase transition-colors" href="/products">Shop</a>
+      <a class="font-label-caps text-xs text-on-surface-variant hover:text-on-surface uppercase transition-colors" href="/user/dashboard">Dashboard</a>
+      <a class="font-label-caps text-xs text-on-surface-variant hover:text-on-surface uppercase transition-colors" href="/user/profile">Profile</a>
+      <a class="font-label-caps text-xs text-on-surface-variant hover:text-on-surface uppercase transition-colors" href="/user/settings">Settings</a>
+    </nav>
+
+    <!-- Quick Action HUD -->
+    <div class="flex items-center gap-2 md:gap-4">
+      <div class="hidden xl:flex items-center gap-2 text-xs font-mono text-on-surface-variant bg-surface-container-high px-3 py-1 border border-outline-variant/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+        <span>NODE: INTL / USD</span>
+      </div>
+
+      <a aria-label="Shopping Cart" class="relative w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" href="/cart">
+        <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+      </a>
+
+      <% if (locals.currentUser) { %>
+        <% if (locals.currentUser.role === 'admin') { %>
+          <a href="/admin/dashboard" class="hidden sm:inline-block font-label-caps text-xs px-2.5 py-1 bg-secondary-container text-on-secondary font-bold uppercase">Admin</a>
+        <% } %>
+        <a class="flex items-center gap-2 pl-2" href="/user/profile" title="View Profile">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden border border-primary">
+            <% if (locals.currentUser.profile_image) { %>
+              <img src="<%= locals.currentUser.profile_image %>" alt="<%= locals.currentUser.name %>" class="w-full h-full object-cover">
+            <% } else { %>
+              <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+            <% } %>
+          </div>
+          <span class="hidden md:inline font-label-caps text-xs text-on-surface uppercase"><%= (locals.currentUser.full_name || locals.currentUser.name || 'User').split(' ')[0] %></span>
+        </a>
+        <a href="/auth/logout" class="text-xs text-on-surface-variant hover:text-error transition-colors p-2" title="Sign Out">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+        </a>
+      <% } else { %>
+        <a href="/auth/login" class="font-label-caps text-xs uppercase px-3 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors">Log In</a>
+        <a href="/auth/register" class="font-label-caps text-xs uppercase px-3 py-1.5 bg-primary-container text-on-primary hover:bg-inverse-primary transition-colors">Join Squad</a>
+      <% } %>
+    </div>
+  </div>
+</header>
