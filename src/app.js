@@ -5,8 +5,12 @@ const routes = require('./routes');
 const userRoutes = require('./routes/userRoutes');
 const { checkCurrentUser } = require('./middlewares/authMiddleware');
 const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHandler');
+const { seedDatabase } = require('./config/db'); // 👈 Added: Database seeder
 
 const app = express();
+
+// Initialize Database & Mock Data on startup
+seedDatabase().catch((err) => console.error('Database seed error:', err)); // 👈 Added: Runs seed for Vercel
 
 // View Engine Setup (EJS)
 app.set('views', path.join(__dirname, 'views'));
