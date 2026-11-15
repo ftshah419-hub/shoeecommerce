@@ -1,0 +1,64 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="container">
+  <div class="auth-box">
+    <div class="auth-header">
+      <h2>Enter 6-Digit Code</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Sent to <strong style="color: var(--text-primary);"><%= identifier %></strong>
+      </p>
+      <span style="display: inline-block; margin-top: 0.5rem; background: rgba(37, 99, 235, 0.15); color: #60a5fa; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 4px; text-transform: uppercase;">
+        <%= (purpose || 'verification').replace('_', ' ') %>
+      </span>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success"><%= success %></div>
+    <% } %>
+
+    <form action="/auth/verify-otp" method="POST" data-auth-form>
+      <input type="hidden" name="identifier" value="<%= identifier %>">
+      <input type="hidden" name="purpose" value="<%= purpose %>">
+      <input type="hidden" name="channel" value="<%= channel %>">
+      <input type="hidden" id="otpCode" name="otpCode" value="">
+
+      <!-- 6 Individual Digit Boxes -->
+      <div class="otp-container">
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" required />
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required />
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required />
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required />
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required />
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required />
+      </div>
+
+      <button type="submit" id="otpSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" disabled>
+        Verify Code
+      </button>
+    </form>
+
+    <!-- Resend OTP Cooldown Form -->
+    <div class="resend-box">
+      <span>Didn't receive the code?</span>
+      <form action="/auth/resend-otp" method="POST" style="display: inline;">
+        <input type="hidden" name="identifier" value="<%= identifier %>">
+        <input type="hidden" name="purpose" value="<%= purpose %>">
+        <input type="hidden" name="channel" value="<%= channel %>">
+        <button type="submit" id="resendOtpBtn" class="btn-text" data-cooldown="60" disabled>
+          Resend Code<span id="resendCountdown"> (60s)</span>
+        </button>
+      </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+      Entered the wrong address? <a href="/auth/forgot-password" style="color: var(--accent); font-weight: 600;">Change contact</a>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

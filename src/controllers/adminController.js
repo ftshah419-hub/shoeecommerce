@@ -105,7 +105,7 @@ class AdminController {
     try {
       const { id } = req.params;
       const { role } = req.body;
-      await adminService.updateUserRole(id, role);
+      await adminService.updateUserRole(id, role, req.user ? req.user.id : 'usr_admin_001');
       res.redirect('/admin/users?success=User role updated successfully.');
     } catch (err) {
       res.redirect(`/admin/users?error=${encodeURIComponent(err.message)}`);
