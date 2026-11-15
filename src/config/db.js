@@ -2,10 +2,28 @@ const bcrypt = require('bcryptjs');
 const ROLES = require('../constants/roles');
 const config = require('../config/config');
 
-// In-Memory Data Store with Persistent-Ready Structure
-// Easily swappable with MongoDB / Mongoose or PostgreSQL / Sequelize
+// In-Memory Data Store representing all relational tables from ER Diagram
+// Source of truth matching PostgreSQL / MySQL / MongoDB architecture
 const db = {
+  // Authentication & User Management Tables
   users: [],
+  user_sessions: [],
+  login_logs: [],
+  social_accounts: [],
+  email_verifications: [],
+  otp_verifications: [],
+  password_resets: [],
+
+  // RBAC Role & Permission Tables
+  roles: [],
+  user_roles: [],
+  permissions: [],
+  role_permissions: [],
+
+  // Administration Tables
+  admin_activity_logs: [],
+
+  // E-Commerce Domain Tables
   products: [],
   orders: [],
   carts: {},
@@ -16,27 +34,93 @@ const seedDatabase = async () => {
   const adminHashedPassword = await bcrypt.hash(config.adminSeed.password, 10);
   const userHashedPassword = await bcrypt.hash('UserSecure123!', 10);
 
-  // Seed Admin and Demo User
-  db.users = [
+  // 1. Seed Roles
+  db.roles = [
     {
-      id: 'usr_admin_001',
-      name: config.adminSeed.name,
-      email: config.adminSeed.email,
-      password: adminHashedPassword,
-      role: ROLES.ADMIN,
+      id: 'role_admin',
+      name: ROLES.ADMIN,
+      description: 'Store Administrator with full operational management privileges',
       createdAt: new Date().toISOString(),
     },
     {
-      id: 'usr_customer_001',
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: userHashedPassword,
-      role: ROLES.USER,
+      id: 'role_customer',
+      name: ROLES.USER,
+      description: 'Standard retail customer with ordering, profile, and bag access',
       createdAt: new Date().toISOString(),
     },
   ];
 
-  // Seed Initial Sneaker Catalog for Neleeri Sneakers
+  // 2. Seed Granular Permissions
+  db.permissions = [
+    { id: 'perm_manage_products', name: 'manage_products', description: 'Create, edit, and delete sneakers' },
+    { id: 'perm_manage_orders', name: 'manage_orders', description: 'View, process, and update customer order status' },
+    { id: 'perm_manage_users', name: 'manage_users', description: 'View customer accounts and promote roles' },
+    { id: 'perm_view_analytics', name: 'view_analytics', description: 'Access financial KPI metrics and dashboard' },
+    { id: 'perm_customer_checkout', name: 'customer_checkout', description: 'Place sneaker orders and checkout cart' },
+    { id: 'perm_manage_profile', name: 'manage_profile', description: 'Update customer personal profile and addresses' },
+  ];
+
+  // 3. Seed Role-Permissions Mapping
+  db.role_permissions = [
+    // Admin gets all permissions
+    { id: 'rp_01', roleId: 'role_admin', permissionId: 'perm_manage_products' },
+    { id: 'rp_02', roleId: 'role_admin', permissionId: 'perm_manage_orders' },
+    { id: 'rp_03', roleId: 'role_admin', permissionId: 'perm_manage_users' },
+    { id: 'rp_04', roleId: 'role_admin', permissionId: 'perm_view_analytics' },
+    { id: 'rp_05', roleId: 'role_admin', permissionId: 'perm_customer_checkout' },
+    { id: 'rp_06', roleId: 'role_admin', permissionId: 'perm_manage_profile' },
+    // Customer permissions
+    { id: 'rp_07', roleId: 'role_customer', permissionId: 'perm_customer_checkout' },
+    { id: 'rp_08', roleId: 'role_customer', permissionId: 'perm_manage_profile' },
+  ];
+
+  // 4. Seed Admin and Demo Customer Accounts
+  db.users = [
+    {
+      id: 'usr_admin_001',
+      firstName: 'Sneakers',
+      lastName: 'SuperAdmin',
+      name: config.adminSeed.name,
+      email: config.adminSeed.email.toLowerCase(),
+      phone: '+15550000001',
+      password: adminHashedPassword,
+      role: ROLES.ADMIN,
+      shoeSize: 10.5,
+      marketingOptIn: true,
+      termsAgreed: true,
+      status: 'active',
+      emailVerified: true,
+      phoneVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'usr_customer_001',
+      firstName: 'John',
+      lastName: 'Doe',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '+15550000002',
+      password: userHashedPassword,
+      role: ROLES.USER,
+      shoeSize: 10,
+      marketingOptIn: false,
+      termsAgreed: true,
+      status: 'active',
+      emailVerified: true,
+      phoneVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  // 5. Seed User-Roles Mapping
+  db.user_roles = [
+    { id: 'ur_001', userId: 'usr_admin_001', roleId: 'role_admin', createdAt: new Date().toISOString() },
+    { id: 'ur_002', userId: 'usr_customer_001', roleId: 'role_customer', createdAt: new Date().toISOString() },
+  ];
+
+  // 6. Seed Initial Sneaker Catalog for Neleeri Sneakers
   db.products = [
     {
       id: 'snk_001',
@@ -105,7 +189,7 @@ const seedDatabase = async () => {
     },
   ];
 
-  // Seed sample initial order
+  // 7. Seed sample initial order
   db.orders = [
     {
       id: 'ord_1001',
@@ -133,7 +217,21 @@ const seedDatabase = async () => {
     },
   ];
 
-  console.log('✅ Neleeri Sneakers Database Initialized with Seed Data.');
+  // 8. Seed Admin Activity Log
+  db.admin_activity_logs = [
+    {
+      id: 'log_adm_init',
+      adminId: 'usr_admin_001',
+      action: 'SYSTEM_BOOTSTRAP',
+      targetType: 'SYSTEM',
+      targetId: 'SYS_INIT',
+      details: 'Neleeri Sneakers Authentication Subsystem initialized with seeded RBAC',
+      ipAddress: '127.0.0.1',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  console.log('✅ Neleeri Sneakers Database Initialized with Full Authentication Schema & Seed Data.');
 };
 
 module.exports = {
